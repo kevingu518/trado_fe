@@ -1,0 +1,96 @@
+.Transactions{
+  &-header{
+    .ant-select-selector{
+      border-radius: 2px !important;
+    }
+  }
+  .container{
+    height: calc(100% - 98px);
+    // overflow: visible !important;
+    // border: 1px solid blue;
+    .ant-table-wrapper{
+      border-radius: 0px 0px 4px 4px;
+    }
+    .ant-table-body{
+      .ant-table-row{
+        cursor: pointer;
+      }
+      .ant-table-cell{
+        // background-color: #f5f5f5;
+        border-bottom: 1px solid #eee;
+      }
+    }
+  }
+  // .ant-pagination{
+  //   position: absolute;
+  //   top: -40px;
+  //   margin: 8px 0px !important;
+  //   right: 0px;
+  //   z-index: 9999;
+  // }
+  .expandedRow{
+    .expandedRow_fills{
+      .ant-card-body{
+        padding: 8px 4px !important;
+      }
+    }
+    .ant-table{
+      thead{
+        .ant-table-cell{
+          background-color: white !important;
+        }
+      }
+      tbody{
+        .ant-table-cell{
+          border-bottom: none;
+        }
+      }
+      // margin-top: 0px !important;
+      margin-inline: 0px !important;
+    }
+  }
+
+  &-statistic{
+    border-top: 1px solid #eee;
+    height: 24px;
+    border-radius: 0px 0px 4px 4px;
+    background-color: #fff !important;
+    z-index: 9999;
+    // color: #fff !important;
+  }
+
+  /* 蓋章樣式 */
+  .stamp-discipline {
+    position: absolute;
+    top: 8px;
+    right: 20px;
+    z-index: 10;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 12px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border: 3px solid white;
+    transform: rotate(0deg);
+    animation: stampPulse 2s ease-in-out infinite;
+  }
+
+  .stamp-pass {
+    background: linear-gradient(135deg, #52c41a, #73d13d);
+  }
+
+  .stamp-fail {
+    background: linear-gradient(135deg, #ff4d4f, #ff7875);
+  }
+
+  .stamp-pending {
+    background: linear-gradient(135deg, #faad14, #ffc53d);
+  }
+}

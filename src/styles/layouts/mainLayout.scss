@@ -1,0 +1,23 @@
+@import '../variables';
+@import '../mixins';
+
+.MainLayout{
+  display: flex;
+  @include size(100%, 100%);
+
+  &-sider{
+    width: $sidebar-width;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    .ant-menu{
+      width: 100%;
+    }
+  }
+
+  &-content{
+    width: calc(100% - $sidebar-width);
+  }
+
+}
