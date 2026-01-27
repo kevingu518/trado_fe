@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Segmented, Modal, Form, Input, InputNumber, DatePicker, Button, Row, Col, Space, Select, Card, Statistic, Divider } from 'antd'
-import { addTrade } from '@api/api_trade'
+import { createTradeApi } from '@api/api_trade'
 import { to } from 'await-to-js'
 import { message } from 'antd'
 const AddTradeModal = ({ show, onClose, onSubmit }) => {
@@ -30,7 +30,7 @@ const AddTradeModal = ({ show, onClose, onSubmit }) => {
         stopLossPrice: values.stopLossPrice ? values.stopLossPrice.toFixed(2) : null,
       }
       console.log({formattedValues})
-      const [error, response] = await to(addTrade(formattedValues))
+      const [error, response] = await to(createTradeApi(formattedValues))
       if (error) {
         message.error(error.message)
         return

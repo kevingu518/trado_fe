@@ -11,8 +11,9 @@ import AuthLayout from './layouts/AuthLayout';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
-import Trades from './pages/Trades';
+// import Trades from './pages/Trades';
 import Transactions from './pages/Transactions';
+import Trades from './features/trades/pages';
 // Components
 import ProtectedRoute from './components/ProtectedRoute';
 // import Dashboard from './pages/Dashboard';

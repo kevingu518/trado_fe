@@ -14,7 +14,8 @@ const request = axios.create({
 // 請求攔截器
 request.interceptors.request.use(
   (config) => {
-    const accessToken = sessionStorage.getItem('access_token') || '';
+    // const accessToken = sessionStorage.getItem('access_token') || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJmMWRjY2Q3ZC0zNzM2LTRjNTUtYmMyNS03ZmVkMjQ2Yjg3NjciLCJlbWFpbCI6InRlc3QxQGV4YW1wbGUuY29tIiwiaWF0IjoxNzY4OTIxMzgwLCJleHAiOjE3Njk1MjYxODB9.C7Z2Tb3iIqrqDu4Rtzut7DRDlSCq4OCWuaWScqPlfhY';
+    const accessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJiNmE3ZGZmMi01YmYyLTQ3NGQtODQxOC0yNjNjOGMyZmY3MmYiLCJlbWFpbCI6InRlc3QxQGV4YW1wbGUuY29tIiwiaWF0IjoxNzY5NTI4NDYzLCJleHAiOjE3NzAxMzMyNjN9.GuagNSZWra2QhQcrreBQCNzWhexoiWX5IdBoREBRi8k';
     if (accessToken) {
       config.headers.Authorization = `Bearer ${accessToken}`;
     }
