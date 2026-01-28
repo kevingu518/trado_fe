@@ -1,6 +1,10 @@
 import request from './request';
 
 export const userAPI = {
+  // google login
+  googleLogin: (data) => 
+    request.post('/auth/google-login', data),
+  
   // 取得使用者列表
   getUsers: (params = {}) => 
     request.get('/users', { params }),
