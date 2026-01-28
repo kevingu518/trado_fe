@@ -6,10 +6,6 @@ import {
   DashboardOutlined, 
   SettingOutlined,
   UserOutlined,
-  SettingFilled,
-  LogoutOutlined,
-  SunOutlined,
-  MoonOutlined
 } from '@ant-design/icons';
 import { FaRegUser } from "react-icons/fa";
 import { logout } from '../api/api_user';
@@ -17,6 +13,7 @@ import { logout as sliceLogout } from '../store/authSlice';
 import { useDispatch } from 'react-redux';
 import { message } from 'antd';
 import { to } from 'await-to-js';
+import { useUserInfo } from '../hooks/useUserInfo';
 
 const items = [
   {
@@ -36,26 +33,14 @@ const items = [
   },
 ];
 
-// 底部選單項目
-const bottomItems = [
-  {
-    key: '4',
-    icon: <SettingFilled />,
-    label: '設定',
-  },
-  {
-    key: '5',
-    icon: <UserOutlined />,
-    label: '使用者',
-    // 標記這個項目不需要 active 狀態
-    // noActive: true,
-  },
-];
 
 const MainLayout = () => {
   const [selectedKeys, setSelectedKeys] = useState(['1']);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
+  // 從 Redux store 取得使用者資訊
+  const { email, name, picture } = useUserInfo();
 
   // dispatch(sliceLogout());
   // 處理選單選擇
@@ -65,13 +50,6 @@ const MainLayout = () => {
       return;
     }
     setSelectedKeys([key]);
-  };
-
-  // 使用者資訊
-  const userInfo = {
-    name: '張小明',
-    email: 'ming@example.com',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=ming'
   };
 
   // 登出處理
@@ -96,13 +74,28 @@ const MainLayout = () => {
   // ------------------------   component  ------------------------
   const userMenuContent = () => (
     <Popover 
-      content={<Button variant='outlined' block onClick={handleLogout}>登出</Button>} 
-      title="使用者" 
+      content={
+        <div>
+          {name && <div style={{ marginBottom: 8, fontWeight: 'bold' }}>{name}</div>}
+          {email && <div style={{ marginBottom: 12, fontSize: '12px', color: '#666' }}>{email}</div>}
+          <Button variant='outlined' block onClick={handleLogout}>登出</Button>
+        </div>
+      } 
+      title="使用者資訊" 
       placement="rightBottom" 
       className='mb-xs mx-xs'
       >
-      <Button type="primary" color="default" variant="text" style={{ height: '40px' }}>
-        <FaRegUser />
+      <Button 
+        type="primary" 
+        color="default" 
+        variant="text" 
+        style={{ height: '40px' }}
+      >
+        {picture ? (
+          <Avatar src={picture} size="small" icon={<UserOutlined />} />
+        ) : (
+          <FaRegUser />
+        )}
       </Button>
     </Popover>
   )
