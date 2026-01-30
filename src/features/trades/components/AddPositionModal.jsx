@@ -27,9 +27,9 @@ const AddPositionModal = ({
       const values = await form.validateFields()
       const positionData = {
         ...values,
-        openDate: values.openDate.format('YYYY-MM-DD'),
+        createdAt: values.createdAt.format('YYYY-MM-DD'), // 改用後端命名
         key: Date.now().toString(), // 生成唯一 key
-        fills: [], // 初始為空
+        positionAdjustments: [], // 改用後端命名
         review: {
           content: '',
           errorCategory: '',
@@ -76,7 +76,7 @@ const AddPositionModal = ({
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
           <Form.Item
             label="股號"
-            name="stockCode"
+            name="symbol"
             rules={[
               { required: true, message: '請輸入股號' },
               { pattern: /^[0-9]{4}$/, message: '股號必須為4位數字' }
@@ -119,7 +119,7 @@ const AddPositionModal = ({
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
           <Form.Item
             label="開倉日"
-            name="openDate"
+            name="createdAt"
             rules={[{ required: true, message: '請選擇開倉日' }]}
           >
             <DatePicker 
@@ -131,7 +131,7 @@ const AddPositionModal = ({
 
           <Form.Item
             label="清倉日"
-            name="closeDate"
+            name="closedAt"
           >
             <DatePicker 
               placeholder="選擇清倉日（選填）" 
@@ -143,7 +143,7 @@ const AddPositionModal = ({
 
         <Form.Item
           label="備註"
-          name="notes"
+          name="note"
         >
           <Input.TextArea 
             placeholder="請輸入備註（選填）"

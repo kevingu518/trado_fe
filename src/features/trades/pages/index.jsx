@@ -1,165 +1,26 @@
 // src/pages/Transactions/index.jsx
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
+
 import { Table, Tag, Button, Space, message, Card, Row, Col, Switch, Rate, Tooltip, DatePicker, Select, Pagination } from 'antd'
+
+const { Option } = Select;
 import { EditOutlined, EyeOutlined, PlusOutlined, CheckOutlined, CloseOutlined, MinusOutlined } from '@ant-design/icons'
-import TransactionDrawer from '../components/TransactionDrawer'
-import AddFillModal from '../components/AddFillModal'
-import AddPositionModal from '../components/AddPositionModal'
 import PerfectScrollbar from 'react-perfect-scrollbar'
 import 'react-perfect-scrollbar/dist/css/styles.css';
+
 import { useTrades } from '../hooks/useTrades'
+
+import AddFillModal from '../components/AddFillModal'
+import AddPositionModal from '../components/AddPositionModal'
+import TransactionDrawer from '../components/TransactionDrawer'
 
 const { RangePicker } = DatePicker;
 
-var mockdata = [
-  {
-    key: '1',
-    index: 1,
-    stockCode: '2330',
-    direction: 'LONG',
-    openDate: '2024-01-15',
-    closeDate: '2024-01-20',
-    result: 1500,
-    discipline: 'pass',
-    status: 'completed',
-    fills: [
-      {
-        key: '1',
-        date: '2024-01-15',
-        action: 'buy',
-        price: 580.5,
-        quantity: 1000,
-        stopLoss: 575.0,
-        notes: '突破阻力位進場'
-      },
-      {
-        key: '2',
-        date: '2024-01-20',
-        action: 'sell',
-        price: 582.0,
-        quantity: 1000,
-        stopLoss: null,
-        notes: '獲利了結'
-      }
-    ],
-    review: {
-      content: '',
-      errorCategory: '',
-      selfRating: 0,
-      emotion: ''
-    }
-  },
-  {
-    key: '2',
-    index: 2,
-    stockCode: '2317',
-    direction: 'SHORT',
-    openDate: '2024-01-18',
-    closeDate: '2024-01-22',
-    result: -800,
-    discipline: 'fail',
-    status: 'completed',
-    fills: [
-      {
-        key: '1',
-        date: '2024-01-18',
-        action: 'sell',
-        price: 105.2,
-        quantity: 2000,
-        notes: '做空進場'
-      },
-      {
-        key: '2',
-        date: '2024-01-22',
-        action: 'buy',
-        price: 106.0,
-        quantity: 2000,
-        notes: '停損出場'
-      }
-    ],
-    review: {
-      content: '',
-      errorCategory: '',
-      selfRating: 0,
-      emotion: ''
-    }
-  },
-  {
-    key: '3',
-    index: 3,
-    stockCode: '2454',
-    direction: 'LONG',
-    openDate: '2024-01-20',
-    closeDate: null,
-    result: null,
-    discipline: 'pending',
-    status: 'open',
-    fills: [
-      {
-        key: '1',
-        date: '2024-01-20',
-        action: 'buy',
-        price: 285.0,
-        quantity: 500,
-        notes: '分批建倉'
-      }
-    ],
-    review: {
-      content: '',
-      errorCategory: '',
-      selfRating: 0,
-      emotion: ''
-    }
-  },
-  {
-    key: '4',
-    index: 4,
-    stockCode: '2454',
-    direction: 'LONG',
-    openDate: '2024-01-20',
-    closeDate: null,
-    result: null,
-    discipline: 'pending',
-    status: 'open',
-    fills: [
-      {
-        key: '1',
-        date: '2024-01-20',
-        action: 'buy',
-        price: 285.0,
-        quantity: 500,
-        notes: '分批建倉'
-      }
-    ],
-    review: {
-      content: '',
-      errorCategory: '',
-      selfRating: 0,
-      emotion: ''
-    }
-  },
-]
-
-for (let i = 0; i < 20; i++) {
-  mockdata.push({
-    key: `${i+5}`,
-    index: i+5,
-    stockCode: '2330',
-    direction: 'LONG',
-    openDate: '2024-01-15',
-    closeDate: '2024-01-20',
-    result: 1500,
-    discipline: 'pass',
-    status: 'completed',
-  })
-}
 const Transactions = () => {
   // -------------------------   variables   ----------------------------
-  // 模擬數據 - 使用 position + fills 結構（作為 fallback）
-  const [dataSource, setDataSource] = useState(mockdata)
 
-  // 新增過濾器狀態
-  const [stockCodeFilter, setStockCodeFilter] = useState(null)
+  // 新增過濾器狀態（使用後端命名）
+  const [symbolFilter, setSymbolFilter] = useState(null)
   const [strategyFilter, setStrategyFilter] = useState(null)
   const [directionFilter, setDirectionFilter] = useState(null)
 
@@ -184,38 +45,41 @@ const Transactions = () => {
   const { data: tradesData, loading: tradesLoading, error: tradesError, refetch: refetchTrades } = useTrades({
     page: pagination.current,
     pageSize: pagination.pageSize,
-    stockCode: stockCodeFilter,
+    symbol: symbolFilter, // 改用後端命名
     strategy: strategyFilter,
     direction: directionFilter,
     status: quickFilter === 'open' ? 'open' : quickFilter === 'completed' ? 'completed' : undefined,
   })
 
-  // // 當 API 資料載入成功時，更新 dataSource 和 pagination
-  // useEffect(() => {
-  //   if (tradesData) {
-  //     // 如果 API 返回的資料格式是 { list, total, page, pageSize }
-  //     if (tradesData.list) {
-  //       setDataSource(tradesData.list)
-  //       setPagination(prev => ({
-  //         ...prev,
-  //         total: tradesData.total || 0,
-  //         current: tradesData.page || prev.current,
-  //         pageSize: tradesData.pageSize || prev.pageSize,
-  //       }))
-  //     } else if (Array.isArray(tradesData)) {
-  //       // 如果 API 直接返回陣列
-  //       setDataSource(tradesData)
-  //     }
-  //   }
-  // }, [tradesData])
+  // 從 tradesData 取得要顯示的資料
+  const displayData = useMemo(() => {
+    if (!tradesData) return []
+    // 如果 API 返回的資料格式是 { list, total, page, pageSize }
+    if (tradesData.list) return tradesData.list
+    // 如果 API 直接返回陣列
+    if (Array.isArray(tradesData)) return tradesData
+    return []
+  }, [tradesData])
 
-  // // 處理 API 錯誤
-  // useEffect(() => {
-  //   if (tradesError) {
-  //     console.error('取得交易資料失敗:', tradesError)
-  //     message.error(tradesError.msg || '取得交易資料失敗')
-  //   }
-  // }, [tradesError])
+  // 當 API 資料載入成功時，更新 pagination
+  useEffect(() => {
+    if (tradesData && tradesData.list) {
+      setPagination(prev => ({
+        ...prev,
+        total: tradesData.total || 0,
+        current: tradesData.page || prev.current,
+        pageSize: tradesData.pageSize || prev.pageSize,
+      }))
+    }
+  }, [tradesData])
+
+  // 處理 API 錯誤
+  useEffect(() => {
+    if (tradesError) {
+      console.error('取得交易資料失敗:', tradesError)
+      message.error(tradesError.msg || '取得交易資料失敗')
+    }
+  }, [tradesError])
 
   // -------------------------   configs   ----------------------------
   // 錯誤分類選項
@@ -248,11 +112,9 @@ const Transactions = () => {
   }
 
   // 處理新增 position
-  const handleAddPosition = (positionData) => {
-    // 暫時更新本地狀態（樂觀更新）
-    setDataSource(prev => [positionData, ...prev])
+  const handleAddPosition = async (positionData) => {
     // 重新載入資料以確保資料一致性
-    refetchTrades()
+    await refetchTrades()
   }
 
   // 處理編輯 - 彈出新增倉位 modal
@@ -296,31 +158,15 @@ const Transactions = () => {
   }
 
   // 添加倉位記錄
-  const handleAddFill = (recordKey, fillData) => {
-    setDataSource(prev => prev.map(item => {
-      if (item.key === recordKey) {
-        return {
-          ...item,
-          fills: [...(item.fills || []), fillData]
-        }
-      }
-      return item
-    }))
+  const handleAddFill = async (recordKey, fillData) => {
+    // 重新載入資料以確保資料一致性
+    await refetchTrades()
   }
 
   // 編輯倉位記錄
-  const handleEditFill = (recordKey, fillIndex, fillData) => {
-    setDataSource(prev => prev.map(item => {
-      if (item.key === recordKey) {
-        const newFills = [...(item.fills || [])]
-        newFills[fillIndex] = fillData
-        return {
-          ...item,
-          fills: newFills
-        }
-      }
-      return item
-    }))
+  const handleEditFill = async (recordKey, fillIndex, fillData) => {
+    // 重新載入資料以確保資料一致性
+    await refetchTrades()
   }
   // 分頁
   const handlePagination = (page, pageSize) => {
@@ -331,18 +177,9 @@ const Transactions = () => {
     }))
   }
   // 刪除倉位記錄
-  const handleDeleteFill = (recordKey, fillIndex) => {
-    setDataSource(prev => prev.map(item => {
-      if (item.key === recordKey) {
-        const newFills = [...(item.fills || [])]
-        newFills.splice(fillIndex, 1)
-        return {
-          ...item,
-          fills: newFills
-        }
-      }
-      return item
-    }))
+  const handleDeleteFill = async (recordKey, fillIndex) => {
+    // 重新載入資料以確保資料一致性
+    await refetchTrades()
   }
 
   // 處理行展開
@@ -387,10 +224,10 @@ const Transactions = () => {
                   },
                   { 
                     title: '數量', 
-                    dataIndex: 'quantity', 
-                    key: 'quantity', 
+                    dataIndex: 'shares', 
+                    key: 'shares', 
                     width: 100,
-                    render: (quantity) => quantity.toLocaleString()
+                    render: (shares) => shares.toLocaleString()
                   },
                   { 
                     title: '停損價', 
@@ -399,9 +236,9 @@ const Transactions = () => {
                     width: 100,
                     render: (stopLoss) => stopLoss ? `$${stopLoss}` : '-'
                   },
-                  { title: '備註', dataIndex: 'notes', key: 'notes', width: 200 },
+                  { title: '備註', dataIndex: 'note', key: 'note', width: 200 },
                 ]}
-                dataSource={record.fills || []}
+                dataSource={record.positionAdjustments || []}
                 pagination={false}
                 size='small'
               />
@@ -417,19 +254,19 @@ const Transactions = () => {
             <div 
               className='stamp-discipline absolute top-0 right-0 shadow-sm'
               style={{
-                background: record.discipline === 'pass' 
+                background: record.followedDiscipline === 'pass' 
                   ? 'linear-gradient(135deg, #52c41a, #73d13d)' 
-                  : record.discipline === 'fail' 
+                  : record.followedDiscipline === 'fail' 
                   ? 'linear-gradient(135deg, #ff4d4f, #ff7875)' 
                   : 'linear-gradient(135deg, #faad14, #ffc53d)',
               }}
             >
               {/* <div style={{ fontSize: '10px', marginBottom: '2px' }}>紀律</div> */}
               <div className='lh-xs' style={{ fontSize: '14px', fontWeight: 'bold' }}>
-                {record.discipline === 'pass' ? '✓' : record.discipline === 'fail' ? '✗' : '?'}
+                {record.followedDiscipline === 'pass' ? '✓' : record.followedDiscipline === 'fail' ? '✗' : '?'}
               </div>
               <div style={{ fontSize: '10px' }}>
-                {record.discipline === 'pass' ? '紀律' : record.discipline === 'fail' ? '沒紀律' : '未定'}
+                {record.followedDiscipline === 'pass' ? '紀律' : record.followedDiscipline === 'fail' ? '沒紀律' : '未定'}
               </div>
             </div>
             <Card title="交易檢討" size="small">
@@ -498,13 +335,13 @@ const Transactions = () => {
                     <strong>是否遵守紀律：</strong>
                     <div style={{ marginTop: 4 }}>
                       <Switch 
-                        checked={record.discipline === 'pass'}
+                        checked={record.followedDiscipline === 'pass'}
                         checkedChildren="是" 
                         unCheckedChildren="否"
                         disabled
                       />
                       <span style={{ marginLeft: 8, fontSize: '12px', color: '#666' }}>
-                        {record.discipline === 'pass' ? '是' : record.discipline === 'fail' ? '否' : '未處理'}
+                        {record.followedDiscipline === 'pass' ? '是' : record.followedDiscipline === 'fail' ? '否' : '未處理'}
                       </span>
                     </div>
                   </div>
@@ -536,48 +373,18 @@ const Transactions = () => {
     )
   }
 
-   // 過濾數據
-   const getFilteredData = () => {
-    let filtered = [...dataSource]
-    
-    // 快速過濾器
-    if (quickFilter === 'open') {
-      filtered = filtered.filter(item => item.status === 'open')
-    } else if (quickFilter === 'completed') {
-      filtered = filtered.filter(item => item.status === 'completed')
-    } else if (quickFilter === 'loss') {
-      filtered = filtered.filter(item => item.result !== null && item.result < 0)
-    } else if (quickFilter === 'profit') {
-      filtered = filtered.filter(item => item.result !== null && item.result > 0)
-    }
-    
-    // 股票號碼過濾器
-    if (stockCodeFilter) {
-      filtered = filtered.filter(item => item.stockCode === stockCodeFilter)
-    }
-    
-    // 策略過濾器
-    if (strategyFilter) {
-      filtered = filtered.filter(item => item.strategy === strategyFilter)
-    }
-    
-    // 多空過濾器
-    if (directionFilter) {
-      filtered = filtered.filter(item => item.direction === directionFilter)
-    }
-    
-    return filtered
-  }
-  const filteredData = getFilteredData()
-
-  // 獲取唯一的股票號碼列表
-  const getUniqueStockCodes = () => {
-    return [...new Set(dataSource.map(item => item.stockCode))].sort()
+  // 獲取唯一的股票號碼列表（用於下拉選單選項）
+  // 注意：這裡只會取得當前頁面的選項，如需完整選項應從 API 取得
+  const getUniqueSymbols = () => {
+    if (!displayData.length) return []
+    return [...new Set(displayData.map(item => item.symbol))].sort() // 改用後端命名
   }
 
-  // 獲取唯一的策略列表（需要先在 mockdata 中添加 strategy 字段）
+  // 獲取唯一的策略列表
+  // 注意：這裡只會取得當前頁面的選項，如需完整選項應從 API 取得
   const getUniqueStrategies = () => {
-    return [...new Set(dataSource.map(item => item.strategy).filter(Boolean))].sort()
+    if (!displayData.length) return []
+    return [...new Set(displayData.map(item => item.strategy).filter(Boolean))].sort()
   }
   // 表格欄位定義
   const columns = [
@@ -607,56 +414,56 @@ const Transactions = () => {
     },
     {
       title: '股號',
-      dataIndex: 'stockCode',
-      key: 'stockCode',
+      dataIndex: 'symbol',
+      key: 'symbol',
       width: '32px',
       align: 'center',
     },
     {
       title: '開倉日',
-      dataIndex: 'openDate',
-      key: 'openDate',
+      dataIndex: 'createdAt',
+      key: 'createdAt',
       width: '32px',
       align: 'center',
     },
     {
       title: '清倉日',
-      dataIndex: 'closeDate',
-      key: 'closeDate',
+      dataIndex: 'closedAt',
+      key: 'closedAt',
       width: '32px',
       align: 'center',
-      render: (closeDate) => closeDate || '-',
+      render: (closedAt) => closedAt || '-',
     },
     {
       title: '結果',
-      dataIndex: 'result',
-      key: 'result',
+      dataIndex: 'profitLoss',
+      key: 'profitLoss',
       width: 120,
       align: 'right',
-      render: (result) => {
-        if (result === null) return '-'
+      render: (profitLoss) => {
+        if (profitLoss === null) return '-'
         return (
           <span style={{ 
-            color: result > 0 ? '#52c41a' : result < 0 ? '#ff4d4f' : '#666'
+            color: profitLoss > 0 ? '#52c41a' : profitLoss < 0 ? '#ff4d4f' : '#666'
           }}>
-            {result > 0 ? '+' : ''}{result.toLocaleString()} 元
+            {profitLoss > 0 ? '+' : ''}{profitLoss.toLocaleString()} 元
           </span>
         )
       },
     },
     {
       title: '紀律',
-      dataIndex: 'discipline',
-      key: 'discipline',
+      dataIndex: 'followedDiscipline',
+      key: 'followedDiscipline',
       width: '32px',
       align: 'center',
-      render: (discipline) => {
+      render: (followedDiscipline) => {
         const disciplineConfig = {
           pass: { icon: <CheckOutlined style={{ color: '#52c41a' }} />, text: '通過' },
           fail: { icon: <CloseOutlined style={{ color: '#ff4d4f' }} />, text: '失敗' },
           pending: { icon: <MinusOutlined style={{ color: '#faad14' }} />, text: '未處理' },
         }
-        const config = disciplineConfig[discipline] || { icon: null, text: discipline }
+        const config = disciplineConfig[followedDiscipline] || { icon: null, text: followedDiscipline }
         return (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
             {config.icon}
@@ -709,6 +516,7 @@ const Transactions = () => {
       ),
     },
   ]
+
   return (
     <div className='h-full w-full p-base Transactions'>
       <div className="card h-full">
@@ -721,13 +529,13 @@ const Transactions = () => {
             />
             <Select
               className='rounded-xs'
-              value={stockCodeFilter}
-              onChange={setStockCodeFilter}
+              value={symbolFilter}
+              onChange={setSymbolFilter}
               placeholder="股票號碼"
               allowClear
               style={{ width: 120 }}
             >
-              {getUniqueStockCodes().map(code => (
+              {getUniqueSymbols().map(code => (
                 <Option key={code} value={code}>{code}</Option>
               ))}
             </Select>
@@ -792,10 +600,10 @@ const Transactions = () => {
         </div>
         {/* table */}
         <PerfectScrollbar className='container bg-white rounded-sm'>
-          <Table
+            <Table
             size='small'
             columns={columns}
-            dataSource={dataSource}
+            dataSource={displayData}
             loading={tradesLoading}
             sticky={true}
             tableLayout='fixed'

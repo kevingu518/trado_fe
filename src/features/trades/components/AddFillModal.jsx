@@ -66,10 +66,10 @@ const AddFillModal = ({
       >
         <div style={{ marginBottom: 16, padding: 12, background: '#f5f5f5', borderRadius: 6 }}>
           <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: 4 }}>
-            交易標的：{selectedRecord?.stockCode} ({selectedRecord?.direction === 'LONG' ? '多' : '空'})
+            交易標的：{selectedRecord?.symbol} ({selectedRecord?.direction === 'LONG' ? '多' : '空'})
           </div>
           <div style={{ fontSize: '12px', color: '#666' }}>
-            開倉日：{selectedRecord?.openDate} | 狀態：{selectedRecord?.status === 'open' ? '持倉中' : '已完成'}
+            開倉日：{selectedRecord?.createdAt} | 狀態：{selectedRecord?.status === 'open' ? '持倉中' : '已完成'}
           </div>
         </div>
 
@@ -131,7 +131,7 @@ const AddFillModal = ({
 
           <Form.Item
             label="數量"
-            name="quantity"
+            name="shares"
             rules={[
               { required: true, message: '請輸入數量' },
               { type: 'number', min: 1, message: '數量必須大於0' }
@@ -165,7 +165,7 @@ const AddFillModal = ({
 
           <Form.Item
             label="備註"
-            name="notes"
+            name="note"
           >
             <Input placeholder="請輸入備註（選填）" />
           </Form.Item>

@@ -24,7 +24,7 @@ export const useTrades = (params = {}, enabled = true) => {
 
     setLoading(false)
     return { err, result }
-  }, [params.page, params.pageSize, params.stockCode, params.strategy, params.direction, params.status])
+  }, [params.page, params.pageSize, params.symbol, params.strategy, params.direction, params.status])
 
   useEffect(() => {
     if (enabled) {

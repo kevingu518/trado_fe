@@ -27,11 +27,11 @@ dayjs.extend(weekYear)
 const originData = Array.from({ length: 8 }).map((_, i) => ({
   key: i.toString(),
   date: `2024-01-${i+1}`,
-  action: '買進',
+  action: 'buy',
   price: 100,
-  quantity: 100,
+  shares: 100,
   stopLoss: 100,
-  notes: 'notes',
+  note: 'notes',
 }));
 const EditableCell = ({
   editing,
@@ -141,19 +141,22 @@ const TransactionDrawer = ({
     },
     {
       title: '數量',
-      dataIndex: 'quantity',
+      dataIndex: 'shares',
+      key: 'shares',
       width: 80,
       editable: true,
     },
     {
       title: '停損價',
       dataIndex: 'stopLoss',
+      key: 'stopLoss',
       width: 80,
       editable: true,
     },
     {
       title: '備註',
-      dataIndex: 'notes',
+      dataIndex: 'note',
+      key: 'note',
       width: 200,
       editable: true,
     },
@@ -261,7 +264,7 @@ const TransactionDrawer = ({
       ...col,
       onCell: record => ({
         record,
-        inputType: ['price', 'quantity', 'stopLoss'].includes(col.dataIndex) 
+        inputType: ['price', 'shares', 'stopLoss'].includes(col.dataIndex) 
           ? 'number' 
           : col.dataIndex === 'date' 
             ? 'date' 
@@ -278,11 +281,11 @@ const TransactionDrawer = ({
     const newRow = {
       key: `new-${Date.now()}`,
       date: '',
-      action: '買進',
+      action: 'buy',
       price: 0,
-      quantity: 0,
+      shares: 0,
       stopLoss: 0,
-      notes: '',
+      note: '',
     };
     
     // 添加到數據中
@@ -305,18 +308,18 @@ const TransactionDrawer = ({
 
   // 計算持倉統計
   const calculatePositionStats = () => {
-    if (!selectedRecord?.fills) return { totalQuantity: 0, avgPrice: 0, totalValue: 0 }
+    if (!selectedRecord?.positionAdjustments) return { totalQuantity: 0, avgPrice: 0, totalValue: 0 }
 
     let totalQuantity = 0
     let totalValue = 0
 
-    selectedRecord.fills.forEach(fill => {
+    selectedRecord.positionAdjustments.forEach(fill => {
       if (fill.action === 'buy') {
-        totalQuantity += fill.quantity
-        totalValue += fill.price * fill.quantity
+        totalQuantity += fill.shares
+        totalValue += fill.price * fill.shares
       } else {
-        totalQuantity -= fill.quantity
-        totalValue -= fill.price * fill.quantity
+        totalQuantity -= fill.shares
+        totalValue -= fill.price * fill.shares
       }
     })
 
@@ -331,7 +334,7 @@ const TransactionDrawer = ({
 
   // 計算盈虧統計
   const calculateProfitStats = () => {
-    const profit = selectedRecord?.result || 0
+    const profit = selectedRecord?.profitLoss || 0
     const totalAssets = 1000000 // 假設總資產
     const profitRatio = ((profit / totalAssets) * 100).toFixed(2)
     
@@ -375,7 +378,7 @@ const TransactionDrawer = ({
               <Card title="基本資訊" size="small" style={{ height: '100%' }}>
                 <Descriptions column={1} size="small">
                   <Descriptions.Item label="股號">
-                    {selectedRecord.stockCode}
+                    {selectedRecord.symbol}
                   </Descriptions.Item>
                   <Descriptions.Item label="方向">
                     <Tag color={selectedRecord.direction === 'LONG' ? 'green' : 'red'}>
@@ -383,10 +386,10 @@ const TransactionDrawer = ({
                     </Tag>
                   </Descriptions.Item>
                   <Descriptions.Item label="開倉日">
-                    {selectedRecord.openDate}
+                    {selectedRecord.createdAt}
                   </Descriptions.Item>
                   <Descriptions.Item label="清倉日">
-                    {selectedRecord.closeDate || '-'}
+                    {selectedRecord.closedAt || '-'}
                   </Descriptions.Item>
                   <Descriptions.Item label="狀態">
                     <Tag color={selectedRecord.status === 'open' ? 'orange' : 'default'}>
@@ -414,7 +417,7 @@ const TransactionDrawer = ({
                     {selectedRecord.details?.strategy || '-'}
                   </Descriptions.Item>
                   <Descriptions.Item label="備註">
-                    {selectedRecord.details?.notes || '-'}
+                    {selectedRecord.details?.note || '-'}
                   </Descriptions.Item>
                 </Descriptions>
               </Card>
@@ -573,15 +576,15 @@ const TransactionDrawer = ({
                     <Col span={12}>
                       <Form.Item
                         label="是否遵守紀律"
-                        name="discipline"
+                        name="followedDiscipline"
                         rules={[{ required: true, message: '請選擇是否遵守紀律' }]}
-                        initialValue={selectedRecord.discipline === 'pass'}
+                        initialValue={selectedRecord.followedDiscipline === 'pass'}
                         style={{ marginBottom: 8 }}
                       >
                         <Switch 
                           checkedChildren="是" 
                           unCheckedChildren="否"
-                          checked={selectedRecord.discipline === 'pass'}
+                          checked={selectedRecord.followedDiscipline === 'pass'}
                         />
                       </Form.Item>
                     </Col>
