@@ -1,48 +1,19 @@
-import React, { useState } from 'react';
-import { Form, Input, Button, Card, Typography, Divider, message, Checkbox } from 'antd';
-import { MailOutlined, LockOutlined, EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
-import { Link, useNavigate } from 'react-router-dom';
-import { login, userAPI } from '@/api/api_user';
-import to from 'await-to-js';
-import { useDispatch } from 'react-redux';
+import React from 'react';
+import { Card, Typography, message } from 'antd';
+import { useNavigate } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
-const { Title, Text } = Typography;
+import { useDispatch } from 'react-redux';
+import { to } from 'await-to-js';
+import { userAPI } from '@/api/api_user';
 import { loginSuccess } from '@/store/authSlice';
+import { FcGoogle } from 'react-icons/fc';
+import { BarChartOutlined } from '@ant-design/icons';
+
+const { Title, Text } = Typography;
 
 const Login = () => {
-  const [form] = Form.useForm();
-  const [loading, setLoading] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-
-  const onFinish = async (values) => {
-    setLoading(true);
-    try {
-      const loginData = {
-        email: values.email,
-        password: values.password,
-      };
-      const [error, response] = await to(login(loginData));
-
-      if (error) {
-        message.error(error.message || '登入失敗');
-        return;
-      }
-      // 儲存 token 到 sessionStorage
-      sessionStorage.setItem('access_token', response.accessToken);
-      // 登入成功，更新 Redux 狀態
-      dispatch(loginSuccess({
-        user: response.user,
-      }));
-      message.success('登入成功！'); 
-      navigate('/trades');
-    } catch (error) {
-      message.error('登入失敗，請檢查信箱和密碼');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // Google 登入成功後處理
   const handleGoogleSuccess = async (credentialResponse) => {
@@ -78,49 +49,57 @@ const Login = () => {
 
   return (
     <div className="auth-container">
-      <div className="auth-card">
+      {/* 背景裝飾 */}
+      <div className="auth-background">
+        <div className="auth-background-gradient"></div>
+        <div className="auth-background-pattern"></div>
+      </div>
+
+      {/* 主要內容 */}
+      <div className="auth-content-wrapper">
         <Card className="login-card">
-          <div className="auth-header">
-            <Title level={2} className="auth-title">
-              歡迎回來
+          {/* Logo 區域 */}
+          <div className="auth-logo-section">
+            <div className="auth-logo-icon">
+              <BarChartOutlined />
+            </div>
+            <Title level={1} className="auth-brand-title">
+              Trado
             </Title>
-            <Text type="secondary">
-              請登入您的帳號以繼續使用服務
+            <Text className="auth-brand-subtitle">
+              專業交易記錄管理平台
             </Text>
           </div>
 
-          <Form
-            form={form}
-            name="login"
-            onFinish={onFinish}
-            layout="vertical"
-            size="large"
-            requiredMark={false}
-          >
-            {/* email & password 同原本 */}
-            {/* ... 原本的 Form.Item 保留不動 ... */}
-          </Form>
+          {/* 登入區域 */}
+          <div className="auth-login-section">
+            <Title level={3} className="auth-welcome-title">
+              歡迎回來
+            </Title>
+            <Text type="secondary" className="auth-welcome-subtitle">
+              使用 Google 帳號快速登入，開始管理您的交易記錄
+            </Text>
 
-          <Divider>
-            <Text type="secondary">或</Text>
-          </Divider>
-
-          <div style={{ display: 'flex', justifyContent: 'center' }}>
-            <GoogleLogin
-              onSuccess={handleGoogleSuccess}
-              onError={handleGoogleError}
-              useOneTap={false}
-            />
+            <div className="google-login-wrapper">
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={handleGoogleError}
+                useOneTap={false}
+                theme="outline"
+                size="large"
+                text="signin_with"
+                shape="rectangular"
+              />
+            </div>
           </div>
 
-          <Divider />
-
+          {/* 頁尾 */}
           <div className="auth-footer">
-            <Text type="secondary">
-              還沒有帳號？{' '}
-              <Link to="/auth/register" className="auth-link">
-                立即註冊
-              </Link>
+            <Text type="secondary" className="auth-footer-text">
+              登入即表示您同意我們的
+              <a href="#" className="auth-link">服務條款</a>
+              {' '}與{' '}
+              <a href="#" className="auth-link">隱私政策</a>
             </Text>
           </div>
         </Card>
