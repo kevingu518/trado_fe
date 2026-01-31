@@ -7,8 +7,10 @@ const { Option } = Select;
 import { EditOutlined, EyeOutlined, PlusOutlined, CheckOutlined, CloseOutlined, MinusOutlined } from '@ant-design/icons'
 import PerfectScrollbar from 'react-perfect-scrollbar'
 import 'react-perfect-scrollbar/dist/css/styles.css';
+import { to } from 'await-to-js'
 
 import { useTrades } from '../hooks/useTrades'
+import { tradesService } from '../services/trades'
 
 import AddFillModal from '../components/AddFillModal'
 import AddPositionModal from '../components/AddPositionModal'
@@ -113,8 +115,34 @@ const Transactions = () => {
 
   // 處理新增 position
   const handleAddPosition = async (positionData) => {
-    // 重新載入資料以確保資料一致性
-    await refetchTrades()
+    try {
+      // 準備 API payload（使用前端格式，DTO 會自動轉換）
+      const payload = {
+        symbol: positionData.symbol,
+        direction: positionData.direction, // "LONG" 或 "SHORT"
+        status: 'open', // 新增時預設為 open
+        followedDiscipline: 'pending', // 新增時預設為 pending
+        strategy: positionData.strategy || null,
+        createdAt: positionData.createdAt, // 已經是 YYYY-MM-DD 格式
+        closedAt: positionData.closedAt || null,
+        note: positionData.note || null,
+      }
+
+      // 調用 service 層的 addTrade
+      const [error, result] = await to(tradesService.addTrade(payload))
+
+      if (error) {
+        message.error(error.msg || error.message || '新增交易記錄失敗')
+        return
+      }
+
+      message.success('交易記錄已新增')
+      // 重新載入資料以確保資料一致性
+      await refetchTrades()
+    } catch (err) {
+      console.error('新增交易記錄失敗:', err)
+      message.error('新增交易記錄失敗，請稍後再試')
+    }
   }
 
   // 處理編輯 - 彈出新增倉位 modal

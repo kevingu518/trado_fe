@@ -149,11 +149,24 @@ export const tradeDTO = {
       pending: null,
     }
 
+    // 智能識別：如果 direction 已經是 'buy' 或 'sell'，表示已經是 API 格式
+    const isDirectionAPIFormat = frontendTrade.direction === 'buy' || frontendTrade.direction === 'sell'
+    const isStatusAPIFormat = frontendTrade.status === 'open' || frontendTrade.status === 'closed'
+    const isDisciplineAPIFormat = typeof frontendTrade.followedDiscipline === 'boolean' || frontendTrade.followedDiscipline === null
+
     return {
       symbol: frontendTrade.symbol,
-      direction: directionMap[frontendTrade.direction] || frontendTrade.direction,
-      status: statusMap[frontendTrade.status] || frontendTrade.status,
-      followedDiscipline: disciplineMap[frontendTrade.followedDiscipline],
+      direction: isDirectionAPIFormat 
+        ? frontendTrade.direction 
+        : (directionMap[frontendTrade.direction] || frontendTrade.direction),
+      status: isStatusAPIFormat 
+        ? frontendTrade.status 
+        : (statusMap[frontendTrade.status] || frontendTrade.status),
+      followedDiscipline: isDisciplineAPIFormat
+        ? frontendTrade.followedDiscipline
+        : (disciplineMap[frontendTrade.followedDiscipline] !== undefined 
+            ? disciplineMap[frontendTrade.followedDiscipline] 
+            : frontendTrade.followedDiscipline),
       reviewNotes: frontendTrade.review?.content || null,
       // 其他欄位根據 API 需求添加
     }
