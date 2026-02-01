@@ -57,15 +57,27 @@ export const tradesService = {
   },
 
   /**
-   * 更新交易
+   * 更新交易（僅用於更新檢討相關欄位）
    * @param {string|number} tradeId 交易 ID
-   * @param {Object} payload 要更新的欄位
+   * @param {Object} payload 要更新的欄位（只接受檢討相關欄位：reviewNotes, errorCategory, emotion, followedDiscipline, selfRating）
    * @returns {Object} 轉換後的交易資料
    */
   async editTrade(tradeId, payload) {
-    // 使用 DTO 轉換前端資料為 API 格式
-    const apiPayload = tradeDTO.toAPI(payload)
-    const apiResponse = await updateTradeApi(tradeId, apiPayload)
+    // 只保留檢討相關的欄位
+    const reviewPayload = {}
+    if (payload.reviewNotes !== undefined) reviewPayload.reviewNotes = payload.reviewNotes
+    if (payload.errorCategory !== undefined) reviewPayload.errorCategory = payload.errorCategory
+    if (payload.emotion !== undefined) reviewPayload.emotion = payload.emotion
+    if (payload.followedDiscipline !== undefined) {
+      // 轉換 followedDiscipline：boolean -> 'yes'/'no'
+      reviewPayload.followedDiscipline = payload.followedDiscipline === true || payload.followedDiscipline === 'yes' ? 'yes' : 
+                                         payload.followedDiscipline === false || payload.followedDiscipline === 'no' ? 'no' : 
+                                         payload.followedDiscipline
+    }
+    if (payload.selfRating !== undefined) reviewPayload.selfRating = payload.selfRating
+
+    // 直接發送檢討相關欄位，不經過 DTO 轉換（因為 DTO 會嘗試轉換其他欄位）
+    const apiResponse = await updateTradeApi(tradeId, reviewPayload)
     // 轉換回前端格式
     return tradeDTO.toFrontend(apiResponse)
   },

@@ -90,29 +90,30 @@ const TradeDrawer = ({
   const positionAdjustments = tradeData?.positionAdjustments || []
 
   // ------------------ configs ------------------
-  // 錯誤分類選項（對應後端 ENTRY_TIMING 等）
+  // 錯誤分類選項（對應後端 ErrorCategory enum）
   const errorCategories = [
     { value: 'ENTRY_TIMING', label: '進場時機錯誤' },
     { value: 'EXIT_TIMING', label: '出場時機錯誤' },
-    { value: 'TECHNICAL', label: '技術分析錯誤' },
-    { value: 'FUNDAMENTAL', label: '基本面分析錯誤' },
-    { value: 'RISK_MANAGEMENT', label: '風險控制不當' },
-    { value: 'EMOTION', label: '情緒影響判斷' },
-    { value: 'STRATEGY', label: '策略執行偏差' },
-    { value: 'MARKET', label: '市場環境誤判' },
+    { value: 'POSITION_SIZE', label: '部位大小錯誤' },
+    { value: 'EMOTION_CONTROL', label: '情緒控制問題' },
+    { value: 'STRATEGY_DEVIATION', label: '偏離策略' },
+    { value: 'RISK_MANAGEMENT', label: '風險管理不當' },
+    { value: 'MARKET_ANALYSIS', label: '市場分析錯誤' },
     { value: 'OTHER', label: '其他' }
   ]
 
-  // 情緒選項（對應後端 CALM 等）
+  // 情緒選項（對應後端 Emotion enum）
   const emotions = [
-    { value: 'CONFIDENT', label: '自信', color: '#52c41a' },
     { value: 'CALM', label: '冷靜', color: '#1890ff' },
     { value: 'ANXIOUS', label: '焦慮', color: '#faad14' },
-    { value: 'GREEDY', label: '貪婪', color: '#ff7a45' },
-    { value: 'FEARFUL', label: '恐懼', color: '#ff4d4f' },
-    { value: 'FRUSTRATED', label: '沮喪', color: '#722ed1' },
     { value: 'EXCITED', label: '興奮', color: '#eb2f96' },
-    { value: 'NEUTRAL', label: '平靜', color: '#8c8c8c' }
+    { value: 'FEARFUL', label: '恐懼', color: '#ff4d4f' },
+    { value: 'GREEDY', label: '貪婪', color: '#ff7a45' },
+    { value: 'CONFIDENT', label: '自信', color: '#52c41a' },
+    { value: 'DOUBTFUL', label: '懷疑', color: '#fa8c16' },
+    { value: 'FRUSTRATED', label: '挫折', color: '#722ed1' },
+    { value: 'IMPATIENT', label: '不耐煩', color: '#f5222d' },
+    { value: 'NEUTRAL', label: '中性', color: '#8c8c8c' }
   ]
 
   const positionColumns = [
@@ -303,17 +304,36 @@ const TradeDrawer = ({
   // 處理保存檢討
   const handleSaveReview = async () => {
     try {
-      const values = await reviewForm.validateFields();
+      // 非必填欄位，即使驗證失敗也取得表單值
+      const values = await reviewForm.validateFields().catch(() => reviewForm.getFieldsValue());
+      
       if (onSaveReview) {
-        await onSaveReview(tradeId, {
-          reviewNotes: values.content,
-          errorCategory: values.errorCategory,
-          emotion: values.emotion,
-          followedDiscipline: values.followedDiscipline ? 'yes' : 'no',
-          selfRating: values.selfRating,
-        });
-        message.success('檢討內容已保存');
-        refetchTrade();
+        // 只發送有值的欄位
+        const reviewData = {};
+        if (values.content !== undefined && values.content !== null && values.content !== '') {
+          reviewData.reviewNotes = values.content;
+        }
+        if (values.errorCategory !== undefined && values.errorCategory !== null && values.errorCategory !== '') {
+          reviewData.errorCategory = values.errorCategory;
+        }
+        if (values.emotion !== undefined && values.emotion !== null && values.emotion !== '') {
+          reviewData.emotion = values.emotion;
+        }
+        if (values.followedDiscipline !== undefined && values.followedDiscipline !== null) {
+          reviewData.followedDiscipline = values.followedDiscipline ? 'yes' : 'no';
+        }
+        if (values.selfRating !== undefined && values.selfRating !== null && values.selfRating !== 0) {
+          reviewData.selfRating = values.selfRating;
+        }
+        
+        // 只有當有至少一個欄位有值時才保存
+        if (Object.keys(reviewData).length > 0) {
+          await onSaveReview(tradeId, reviewData);
+          message.success('檢討內容已保存');
+          refetchTrade();
+        } else {
+          message.info('請至少填寫一項檢討內容');
+        }
       }
     } catch (error) {
       console.error('保存檢討失敗:', error);
@@ -496,7 +516,6 @@ const TradeDrawer = ({
                   <Form.Item
                     label="檢討內容"
                     name="content"
-                    rules={[{ required: true, message: '請輸入檢討內容' }]}
                   >
                     <TextArea
                       rows={8}
@@ -520,7 +539,6 @@ const TradeDrawer = ({
                       <Form.Item
                         label="錯誤分類"
                         name="errorCategory"
-                        rules={[{ required: true, message: '請選擇錯誤分類' }]}
                       >
                         <Select placeholder="請選擇主要錯誤類型">
                           {errorCategories.map(category => (
@@ -535,7 +553,6 @@ const TradeDrawer = ({
                       <Form.Item
                         label="當時情緒"
                         name="emotion"
-                        rules={[{ required: true, message: '請選擇當時情緒' }]}
                       >
                         <Select placeholder="請選擇交易時的情緒狀態">
                           {emotions.map(emotion => (
@@ -563,7 +580,6 @@ const TradeDrawer = ({
                       <Form.Item
                         label="是否遵守紀律"
                         name="followedDiscipline"
-                        rules={[{ required: true, message: '請選擇是否遵守紀律' }]}
                         valuePropName="checked"
                       >
                         <Switch 
@@ -576,12 +592,10 @@ const TradeDrawer = ({
                       <Form.Item
                         label="自我評分"
                         name="selfRating"
-                        rules={[{ required: true, message: '請進行自我評分' }]}
                       >
                         <Rate 
-                          allowHalf 
-                          count={10}
-                          tooltips={['1分', '2分', '3分', '4分', '5分', '6分', '7分', '8分', '9分', '10分']}
+                          count={5}
+                          tooltips={['1分', '2分', '3分', '4分', '5分']}
                         />
                       </Form.Item>
                     </Col>
@@ -595,7 +609,7 @@ const TradeDrawer = ({
                     color: '#666',
                     lineHeight: '1.3'
                   }}>
-                    <strong>評分說明：</strong>1-3分：表現不佳，4-6分：一般水準，7-8分：表現良好，9-10分：完美執行
+                    <strong>評分說明：</strong>1分：表現不佳，2分：表現較差，3分：一般水準，4分：表現良好，5分：完美執行
                   </div>
                 </Form>
               </Col>

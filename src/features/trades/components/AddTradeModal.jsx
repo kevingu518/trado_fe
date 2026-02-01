@@ -1,16 +1,20 @@
 // src/features/trades/components/AddTradeModal.jsx
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Modal, Form, Input, Select, DatePicker, InputNumber, Button, Space, message, Segmented } from 'antd'
-import { PlusOutlined } from '@ant-design/icons'
+import { PlusOutlined, EditOutlined } from '@ant-design/icons'
+import dayjs from 'dayjs'
 
 const { Option } = Select
 
 const AddTradeModal = ({ 
   visible, 
   onClose, 
-  onSave 
+  onSave,
+  tradeId = null, // 編輯模式時傳入 tradeId
+  initialData = null // 編輯模式時傳入初始資料
 }) => {
   const [form] = Form.useForm()
+  const isEditMode = !!tradeId
 
   // 策略選項
   const strategies = [
@@ -21,29 +25,71 @@ const AddTradeModal = ({
     { value: '期現對沖', label: '期現對沖' }
   ]
 
+  // 初始化表單資料（編輯模式）
+  useEffect(() => {
+    if (visible && isEditMode && initialData) {
+      form.setFieldsValue({
+        symbol: initialData.symbol,
+        direction: initialData.direction,
+        strategy: initialData.strategy || 'none',
+        createdAt: initialData.createdAt ? dayjs(initialData.createdAt) : null,
+        closedAt: initialData.closedAt ? dayjs(initialData.closedAt) : null,
+        note: initialData.note || '',
+      })
+    } else if (visible && !isEditMode) {
+      // 新增模式時重置表單
+      form.resetFields()
+      form.setFieldsValue({
+        direction: 'LONG',
+        strategy: 'none',
+      })
+    }
+  }, [visible, isEditMode, initialData, form])
+
   // 處理保存
   const handleSave = async () => {
     try {
-      const values = await form.validateFields()
-      const tradeData = {
-        ...values,
-        createdAt: values.createdAt.format('YYYY-MM-DD'), // 改用後端命名
-        key: Date.now().toString(), // 生成唯一 key
-        positionAdjustments: [], // 倉位變動列表
-        review: {
-          content: '',
-          errorCategory: '',
-          selfRating: 0,
-          emotion: ''
-        }
-      }
+      // 編輯模式時，只驗證已填寫的欄位（非必填）
+      // 新增模式時，驗證所有必填欄位
+      const values = isEditMode 
+        ? await form.validateFields().catch(() => form.getFieldsValue()) // 編輯模式：即使驗證失敗也取得表單值
+        : await form.validateFields() // 新增模式：嚴格驗證
 
-      onSave(tradeData)
+      // 編輯模式：只發送有值的欄位
+      const tradeData = isEditMode
+        ? {
+            ...(values.symbol && { symbol: values.symbol }),
+            ...(values.direction && { direction: values.direction }),
+            ...(values.strategy !== undefined && values.strategy !== null && values.strategy !== 'none' && { strategy: values.strategy }),
+            ...(values.createdAt && { createdAt: values.createdAt.format('YYYY-MM-DD') }),
+            ...(values.closedAt && { closedAt: values.closedAt.format('YYYY-MM-DD') }),
+            ...(values.note !== undefined && values.note !== null && { note: values.note }),
+          }
+        : {
+            symbol: values.symbol,
+            direction: values.direction,
+            strategy: values.strategy || null,
+            createdAt: values.createdAt ? values.createdAt.format('YYYY-MM-DD') : null,
+            closedAt: values.closedAt ? values.closedAt.format('YYYY-MM-DD') : null,
+            note: values.note || null,
+          }
+
+      // 如果是編輯模式，需要傳入 tradeId
+      if (isEditMode) {
+        await onSave(tradeId, tradeData)
+      } else {
+        await onSave(tradeData)
+      }
+      
       form.resetFields()
       onClose()
-      message.success('交易記錄已新增')
+      message.success(isEditMode ? '交易記錄已更新' : '交易記錄已新增')
     } catch (error) {
       console.error('保存失敗:', error)
+      if (!isEditMode) {
+        // 新增模式時才顯示驗證錯誤
+        message.error('請檢查表單欄位')
+      }
     }
   }
 
@@ -55,7 +101,7 @@ const AddTradeModal = ({
 
   return (
     <Modal
-      title="新增交易記錄"
+      title={isEditMode ? "編輯交易記錄" : "新增交易記錄"}
       open={visible}
       onCancel={handleCancel}
       width={600}
@@ -63,8 +109,13 @@ const AddTradeModal = ({
         <Button key="cancel" onClick={handleCancel}>
           取消
         </Button>,
-        <Button key="save" type="primary" icon={<PlusOutlined />} onClick={handleSave}>
-          新增
+        <Button 
+          key="save" 
+          type="primary" 
+          icon={isEditMode ? <EditOutlined /> : <PlusOutlined />} 
+          onClick={handleSave}
+        >
+          {isEditMode ? '保存' : '新增'}
         </Button>
       ]}
     >
@@ -78,7 +129,7 @@ const AddTradeModal = ({
             label="股號"
             name="symbol"
             rules={[
-              { required: true, message: '請輸入股號' },
+              ...(isEditMode ? [] : [{ required: true, message: '請輸入股號' }]), // 編輯模式時非必填
               { pattern: /^[0-9]{4}$/, message: '股號必須為4位數字' }
             ]}
           >
@@ -88,7 +139,7 @@ const AddTradeModal = ({
           <Form.Item
             label="多空"
             name="direction"
-            rules={[{ required: true, message: '請選擇多空' }]}
+            rules={isEditMode ? [] : [{ required: true, message: '請選擇多空' }]} // 編輯模式時非必填
             initialValue="LONG"
           >
             <Segmented
@@ -103,7 +154,7 @@ const AddTradeModal = ({
           <Form.Item
             label="策略"
             name="strategy"
-            rules={[{ required: true, message: '請選擇策略' }]}
+            rules={isEditMode ? [] : [{ required: true, message: '請選擇策略' }]} // 編輯模式時非必填
             initialValue="none"
           >
             <Select placeholder="請選擇策略">
@@ -120,7 +171,7 @@ const AddTradeModal = ({
           <Form.Item
             label="開倉日"
             name="createdAt"
-            rules={[{ required: true, message: '請選擇開倉日' }]}
+            rules={isEditMode ? [] : [{ required: true, message: '請選擇開倉日' }]} // 編輯模式時非必填
           >
             <DatePicker 
               placeholder="選擇開倉日" 

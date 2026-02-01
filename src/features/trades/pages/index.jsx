@@ -29,6 +29,7 @@ const Transactions = () => {
   const [drawerVisible, setDrawerVisible] = useState(false)
   const [addPositionModalVisible, setAddPositionModalVisible] = useState(false)
   const [addTradeModalVisible, setAddTradeModalVisible] = useState(false)
+  const [editingTrade, setEditingTrade] = useState(null) // 正在編輯的交易資料
   const [selectedRecord, setSelectedRecord] = useState(null)
   const [expandedRowKeys, setExpandedRowKeys] = useState([])
   const [quickFilter, setQuickFilter] = useState('all')
@@ -50,7 +51,9 @@ const Transactions = () => {
     error: tradesError, 
     refetch: refetchTrades,
     createTrade,
-    creating: creatingTrade
+    creating: creatingTrade,
+    updateTrade,
+    updating: updatingTrade
   } = useTrades({
     page: pagination.current,
     pageSize: pagination.pageSize,
@@ -91,28 +94,30 @@ const Transactions = () => {
   }, [tradesError])
 
   // -------------------------   configs   ----------------------------
-  // 錯誤分類選項
+  // 錯誤分類選項（對應後端 ErrorCategory enum）
   const errorCategories = [
-    { value: 'technical', label: '技術分析錯誤' },
-    { value: 'fundamental', label: '基本面分析錯誤' },
-    { value: 'timing', label: '進出場時機錯誤' },
-    { value: 'risk', label: '風險控制不當' },
-    { value: 'emotion', label: '情緒影響判斷' },
-    { value: 'strategy', label: '策略執行偏差' },
-    { value: 'market', label: '市場環境誤判' },
-    { value: 'other', label: '其他' }
+    { value: 'ENTRY_TIMING', label: '進場時機錯誤' },
+    { value: 'EXIT_TIMING', label: '出場時機錯誤' },
+    { value: 'POSITION_SIZE', label: '部位大小錯誤' },
+    { value: 'EMOTION_CONTROL', label: '情緒控制問題' },
+    { value: 'STRATEGY_DEVIATION', label: '偏離策略' },
+    { value: 'RISK_MANAGEMENT', label: '風險管理不當' },
+    { value: 'MARKET_ANALYSIS', label: '市場分析錯誤' },
+    { value: 'OTHER', label: '其他' }
   ]
 
-  // 情緒選項
+  // 情緒選項（對應後端 Emotion enum）
   const emotions = [
-    { value: 'confident', label: '自信', color: '#52c41a' },
-    { value: 'calm', label: '冷靜', color: '#1890ff' },
-    { value: 'anxious', label: '焦慮', color: '#faad14' },
-    { value: 'greedy', label: '貪婪', color: '#ff7a45' },
-    { value: 'fearful', label: '恐懼', color: '#ff4d4f' },
-    { value: 'frustrated', label: '沮喪', color: '#722ed1' },
-    { value: 'excited', label: '興奮', color: '#eb2f96' },
-    { value: 'neutral', label: '平靜', color: '#8c8c8c' }
+    { value: 'CALM', label: '冷靜', color: '#1890ff' },
+    { value: 'ANXIOUS', label: '焦慮', color: '#faad14' },
+    { value: 'EXCITED', label: '興奮', color: '#eb2f96' },
+    { value: 'FEARFUL', label: '恐懼', color: '#ff4d4f' },
+    { value: 'GREEDY', label: '貪婪', color: '#ff7a45' },
+    { value: 'CONFIDENT', label: '自信', color: '#52c41a' },
+    { value: 'DOUBTFUL', label: '懷疑', color: '#fa8c16' },
+    { value: 'FRUSTRATED', label: '挫折', color: '#722ed1' },
+    { value: 'IMPATIENT', label: '不耐煩', color: '#f5222d' },
+    { value: 'NEUTRAL', label: '中性', color: '#8c8c8c' }
   ]
   // -------------------------   functions   ----------------------------
   // 處理新增交易 - 彈出新增 trade modal
@@ -151,8 +156,34 @@ const Transactions = () => {
     }
   }
 
-  // 處理編輯 - 彈出新增倉位 modal
-  const handleEdit = (record) => {
+  // 處理編輯交易 - 彈出編輯 trade modal
+  const handleEditTrade = (record) => {
+    setEditingTrade(record)
+    setAddTradeModalVisible(true)
+  }
+
+  // 處理保存 trade（用於 Modal 的 onSave，支援新增和編輯）
+  const handleSaveTrade = async (tradeIdOrData, tradeData) => {
+    try {
+      // 判斷是編輯模式還是新增模式
+      if (typeof tradeIdOrData === 'string' || typeof tradeIdOrData === 'number') {
+        // 編輯模式：第一個參數是 tradeId
+        // 注意：updateTradeApi 只接受檢討相關欄位，所以這裡不應該更新交易基本資訊
+        // 如果需要更新交易基本資訊，應該使用其他 API 端點
+        message.warning('目前不支援從此處編輯交易基本資訊，請使用其他方式更新')
+        return
+      } else {
+        // 新增模式：第一個參數是 tradeData
+        await handleAddTrade(tradeIdOrData)
+      }
+    } catch (err) {
+      console.error('保存交易記錄失敗:', err)
+      message.error('保存交易記錄失敗，請稍後再試')
+    }
+  }
+
+  // 處理新增倉位 - 彈出新增倉位 modal
+  const handleOpenAddPositionModal = (record) => {
     setSelectedRecord(record)
     setAddPositionModalVisible(true)
   }
@@ -178,9 +209,10 @@ const Transactions = () => {
     setSelectedRecord(null)
   }
 
-  // 關閉新增 trade modal
+  // 關閉新增/編輯 trade modal
   const handleCloseAddTradeModal = () => {
     setAddTradeModalVisible(false)
+    setEditingTrade(null)
   }
 
   // 保存檢討
@@ -191,14 +223,16 @@ const Transactions = () => {
         return
       }
 
+      // 只發送有值的欄位（過濾掉 undefined）
+      const payload = {}
+      if (reviewData.reviewNotes !== undefined) payload.reviewNotes = reviewData.reviewNotes
+      if (reviewData.errorCategory !== undefined) payload.errorCategory = reviewData.errorCategory
+      if (reviewData.emotion !== undefined) payload.emotion = reviewData.emotion
+      if (reviewData.followedDiscipline !== undefined) payload.followedDiscipline = reviewData.followedDiscipline
+      if (reviewData.selfRating !== undefined) payload.selfRating = reviewData.selfRating
+
       // 調用 service 層的 editTrade 更新檢討內容
-      const [error, result] = await to(tradesService.editTrade(tradeId, {
-        reviewNotes: reviewData.reviewNotes,
-        errorCategory: reviewData.errorCategory,
-        emotion: reviewData.emotion,
-        followedDiscipline: reviewData.followedDiscipline,
-        selfRating: reviewData.selfRating,
-      }))
+      const [error, result] = await to(tradesService.editTrade(tradeId, payload))
 
       if (error) {
         message.error(error.msg || error.message || '保存檢討失敗')
@@ -215,7 +249,7 @@ const Transactions = () => {
   }
 
   // 添加倉位記錄
-  const handleAddPosition = async (recordKey, positionData) => {
+  const handleAddPositionToTrade = async (recordKey, positionData) => {
     // 重新載入資料以確保資料一致性
     await refetchTrades()
   }
@@ -560,11 +594,20 @@ const Transactions = () => {
               title="查看"
             />
           </Tooltip>
-          <Tooltip placement="top" title="新增倉位">
+          <Tooltip placement="top" title="編輯交易">
             <Button
               type="link"
               icon={<EditOutlined />}
-              onClick={() => handleEdit(record)}
+              onClick={() => handleEditTrade(record)}
+              size="small"
+              title="編輯交易"
+            />
+          </Tooltip>
+          <Tooltip placement="top" title="新增倉位">
+            <Button
+              type="link"
+              icon={<PlusOutlined />}
+              onClick={() => handleOpenAddPositionModal(record)}
               size="small"
               title="新增倉位"
             />
@@ -700,7 +743,7 @@ const Transactions = () => {
           onClose={handleCloseDrawer}
           tradeId={tradeId}
           onSaveReview={handleSaveReview}
-          onAddPosition={handleAddPosition}
+          onAddPosition={handleOpenAddPositionModal}
           onEditPosition={handleEditPosition}
           onDeletePosition={handleDeletePosition}
         />
@@ -708,14 +751,16 @@ const Transactions = () => {
         <AddPositionModal
           visible={addPositionModalVisible}
           onClose={handleCloseAddPositionModal}
-          onSave={handleAddPosition}
+          onSave={handleAddPositionToTrade}
           selectedRecord={selectedRecord}
         />
 
         <AddTradeModal
           visible={addTradeModalVisible}
           onClose={handleCloseAddTradeModal}
-          onSave={handleAddTrade}
+          onSave={handleSaveTrade}
+          tradeId={editingTrade?.id || null}
+          initialData={editingTrade || null}
         />
       </div>
   </div>
