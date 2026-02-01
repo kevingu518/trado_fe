@@ -14,7 +14,7 @@ import { tradesService } from '../services/trades'
 
 import AddFillModal from '../components/AddFillModal'
 import AddPositionModal from '../components/AddPositionModal'
-import TransactionDrawer from '../components/TransactionDrawer'
+import TradeDrawer from '../components/TradeDrawer'
 
 const { RangePicker } = DatePicker;
 
@@ -157,6 +157,9 @@ const Transactions = () => {
     setDrawerVisible(true)
   }
 
+  // 取得 tradeId（從 selectedRecord 或直接使用）
+  const tradeId = selectedRecord?.id || null
+
   // 關閉 drawer
   const handleCloseDrawer = () => {
     setDrawerVisible(false)
@@ -175,10 +178,30 @@ const Transactions = () => {
   }
 
   // 保存檢討
-  const handleSaveReview = async () => {
+  const handleSaveReview = async (tradeId, reviewData) => {
     try {
-      // 這裡可以添加保存檢討的邏輯
+      if (!tradeId) {
+        message.error('交易 ID 不存在')
+        return
+      }
+
+      // 調用 service 層的 editTrade 更新檢討內容
+      const [error, result] = await to(tradesService.editTrade(tradeId, {
+        reviewNotes: reviewData.reviewNotes,
+        errorCategory: reviewData.errorCategory,
+        emotion: reviewData.emotion,
+        followedDiscipline: reviewData.followedDiscipline,
+        selfRating: reviewData.selfRating,
+      }))
+
+      if (error) {
+        message.error(error.msg || error.message || '保存檢討失敗')
+        return
+      }
+
       message.success('檢討內容已保存')
+      // 重新載入交易列表
+      await refetchTrades()
     } catch (error) {
       console.error('保存失敗:', error)
       message.error('保存失敗，請檢查輸入內容')
@@ -666,10 +689,10 @@ const Transactions = () => {
         {/* statistic */}
         <div className='Transactions-statistic bg-white mt-xs rounded-xs'>123</div>
 
-        <TransactionDrawer
+        <TradeDrawer
           visible={drawerVisible}
           onClose={handleCloseDrawer}
-          selectedRecord={selectedRecord}
+          tradeId={tradeId}
           onSaveReview={handleSaveReview}
           onAddFill={handleAddFill}
           onEditFill={handleEditFill}

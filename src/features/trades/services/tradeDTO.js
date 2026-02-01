@@ -35,12 +35,12 @@ const convertStatus = (status) => {
 
 /**
  * 轉換紀律：API 格式 → 前端格式
- * @param {boolean|null} followedDiscipline API 的 followedDiscipline
+ * @param {string|boolean|null} followedDiscipline API 的 followedDiscipline ("yes" | "no" | true | false | null)
  * @returns {string} 前端的 discipline ("pass" | "fail" | "pending")
  */
 const convertDiscipline = (followedDiscipline) => {
-  if (followedDiscipline === true) return 'pass'
-  if (followedDiscipline === false) return 'fail'
+  if (followedDiscipline === true || followedDiscipline === 'yes') return 'pass'
+  if (followedDiscipline === false || followedDiscipline === 'no') return 'fail'
   return 'pending'
 }
 
@@ -79,21 +79,40 @@ export const tradeDTO = {
     return {
       key: apiTrade.id,
       id: apiTrade.id,
-      symbol: apiTrade.symbol || '', // 改用後端命名
-      strategy: apiTrade.strategy || '', // API 目前沒有提供，保留空字串
+      symbol: apiTrade.symbol || '',
+      assetType: apiTrade.assetType || 'stock',
+      strategy: apiTrade.strategy || '', // 如果 API 沒有提供，保留空字串
       direction: convertDirection(apiTrade.direction),
-      createdAt: formatDate(apiTrade.createdAt), // 改用後端命名，但格式化為 YYYY-MM-DD
-      closedAt: formatDate(apiTrade.closedAt), // 改用後端命名，但格式化為 YYYY-MM-DD
-      profitLoss: apiTrade.profitLoss !== null ? parseFloat(apiTrade.profitLoss) : null, // 改用後端命名
-      followedDiscipline: convertDiscipline(apiTrade.followedDiscipline), // 改用後端命名，但轉換為 pass/fail/pending
       status: convertStatus(apiTrade.status),
-      positionAdjustments: (apiTrade.positionAdjustments || []).map(convertFill), // 改用後端命名
-      review: {
-        content: apiTrade.reviewNotes || '',
-        errorCategory: '', // API 目前沒有提供，保留空字串
-        selfRating: 0, // API 目前沒有提供，預設 0
-        emotion: '', // API 目前沒有提供，保留空字串
-      },
+      createdAt: formatDate(apiTrade.createdAt),
+      closedAt: formatDate(apiTrade.closedAt),
+      updatedAt: formatDate(apiTrade.updatedAt),
+      
+      // 持倉統計（以後端欄位為主）
+      totalShares: apiTrade.totalShares || 0,
+      avgPrice: apiTrade.avgPrice ? parseFloat(apiTrade.avgPrice) : 0,
+      totalValue: apiTrade.totalValue ? parseFloat(apiTrade.totalValue) : 0,
+      positionNote: apiTrade.positionNote || '',
+      
+      // 盈虧分析（以後端欄位為主）
+      grossProfitLoss: apiTrade.grossProfitLoss !== null ? parseFloat(apiTrade.grossProfitLoss) : null,
+      profitLoss: apiTrade.profitLoss !== null ? parseFloat(apiTrade.profitLoss) : (apiTrade.grossProfitLoss !== null ? parseFloat(apiTrade.grossProfitLoss) : null), // 保留舊欄位，優先使用 profitLoss
+      profitLossRatio: apiTrade.profitLossRatio !== null ? parseFloat(apiTrade.profitLossRatio) : null,
+      totalFee: apiTrade.totalFee !== null ? parseFloat(apiTrade.totalFee) : null,
+      totalTax: apiTrade.totalTax !== null ? parseFloat(apiTrade.totalTax) : null,
+      netProfitLoss: apiTrade.netProfitLoss !== null ? parseFloat(apiTrade.netProfitLoss) : null,
+      
+      // 檢討（以後端欄位為主）
+      reviewNotes: apiTrade.reviewNotes || '',
+      errorCategory: apiTrade.errorCategory || '',
+      emotion: apiTrade.emotion || '',
+      followedDiscipline: convertDiscipline(apiTrade.followedDiscipline),
+      selfRating: apiTrade.selfRating !== null ? parseFloat(apiTrade.selfRating) : 0,
+      exitReason: apiTrade.exitReason || '',
+      
+      // 倉位調整
+      positionAdjustments: (apiTrade.positionAdjustments || []).map(convertFill),
+      
       // 保留原始資料以備不時之需
       _raw: apiTrade,
     }
@@ -144,15 +163,33 @@ export const tradeDTO = {
     }
 
     const disciplineMap = {
-      pass: true,
-      fail: false,
+      pass: 'yes',
+      fail: 'no',
       pending: null,
+      yes: 'yes',
+      no: 'no',
     }
 
     // 智能識別：如果 direction 已經是 'buy' 或 'sell'，表示已經是 API 格式
     const isDirectionAPIFormat = frontendTrade.direction === 'buy' || frontendTrade.direction === 'sell'
     const isStatusAPIFormat = frontendTrade.status === 'open' || frontendTrade.status === 'closed'
-    const isDisciplineAPIFormat = typeof frontendTrade.followedDiscipline === 'boolean' || frontendTrade.followedDiscipline === null
+    const isDisciplineAPIFormat = frontendTrade.followedDiscipline === 'yes' || frontendTrade.followedDiscipline === 'no' || 
+                                  frontendTrade.followedDiscipline === true || frontendTrade.followedDiscipline === false ||
+                                  frontendTrade.followedDiscipline === null
+
+    // 處理 followedDiscipline 轉換
+    let followedDisciplineValue = frontendTrade.followedDiscipline
+    if (!isDisciplineAPIFormat) {
+      if (disciplineMap[frontendTrade.followedDiscipline] !== undefined) {
+        followedDisciplineValue = disciplineMap[frontendTrade.followedDiscipline]
+      } else if (frontendTrade.followedDiscipline === true) {
+        followedDisciplineValue = 'yes'
+      } else if (frontendTrade.followedDiscipline === false) {
+        followedDisciplineValue = 'no'
+      }
+    } else if (typeof frontendTrade.followedDiscipline === 'boolean') {
+      followedDisciplineValue = frontendTrade.followedDiscipline ? 'yes' : 'no'
+    }
 
     return {
       symbol: frontendTrade.symbol,
@@ -162,12 +199,15 @@ export const tradeDTO = {
       status: isStatusAPIFormat 
         ? frontendTrade.status 
         : (statusMap[frontendTrade.status] || frontendTrade.status),
-      followedDiscipline: isDisciplineAPIFormat
-        ? frontendTrade.followedDiscipline
-        : (disciplineMap[frontendTrade.followedDiscipline] !== undefined 
-            ? disciplineMap[frontendTrade.followedDiscipline] 
-            : frontendTrade.followedDiscipline),
-      reviewNotes: frontendTrade.review?.content || null,
+      followedDiscipline: followedDisciplineValue,
+      // 檢討相關欄位
+      reviewNotes: frontendTrade.reviewNotes || frontendTrade.review?.content || null,
+      errorCategory: frontendTrade.errorCategory || null,
+      emotion: frontendTrade.emotion || null,
+      selfRating: frontendTrade.selfRating !== null && frontendTrade.selfRating !== undefined 
+        ? parseFloat(frontendTrade.selfRating) 
+        : null,
+      exitReason: frontendTrade.exitReason || null,
       // 其他欄位根據 API 需求添加
     }
   },
