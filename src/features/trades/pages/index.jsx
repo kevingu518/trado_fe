@@ -12,7 +12,7 @@ import { to } from 'await-to-js'
 import { useTrades } from '../hooks/useTrades'
 import { tradesService } from '../services/trades'
 
-import AddFillModal from '../components/AddFillModal'
+import AddTradeModal from '../components/AddTradeModal'
 import AddPositionModal from '../components/AddPositionModal'
 import TradeDrawer from '../components/TradeDrawer'
 
@@ -27,8 +27,8 @@ const Transactions = () => {
   const [directionFilter, setDirectionFilter] = useState(null)
 
   const [drawerVisible, setDrawerVisible] = useState(false)
-  const [addFillModalVisible, setAddFillModalVisible] = useState(false)
   const [addPositionModalVisible, setAddPositionModalVisible] = useState(false)
+  const [addTradeModalVisible, setAddTradeModalVisible] = useState(false)
   const [selectedRecord, setSelectedRecord] = useState(null)
   const [expandedRowKeys, setExpandedRowKeys] = useState([])
   const [quickFilter, setQuickFilter] = useState('all')
@@ -44,7 +44,14 @@ const Transactions = () => {
 
   // -------------------------   hooks   ----------------------------
   // 使用 useTrades hook 取得交易資料
-  const { data: tradesData, loading: tradesLoading, error: tradesError, refetch: refetchTrades } = useTrades({
+  const { 
+    data: tradesData, 
+    loading: tradesLoading, 
+    error: tradesError, 
+    refetch: refetchTrades,
+    createTrade,
+    creating: creatingTrade
+  } = useTrades({
     page: pagination.current,
     pageSize: pagination.pageSize,
     symbol: symbolFilter, // 改用後端命名
@@ -108,28 +115,28 @@ const Transactions = () => {
     { value: 'neutral', label: '平靜', color: '#8c8c8c' }
   ]
   // -------------------------   functions   ----------------------------
-  // 處理新增交易 - 彈出新增 position modal
+  // 處理新增交易 - 彈出新增 trade modal
   const handleAdd = () => {
-    setAddPositionModalVisible(true)
+    setAddTradeModalVisible(true)
   }
 
-  // 處理新增 position
-  const handleAddPosition = async (positionData) => {
+  // 處理新增 trade
+  const handleAddTrade = async (tradeData) => {
     try {
       // 準備 API payload（使用前端格式，DTO 會自動轉換）
       const payload = {
-        symbol: positionData.symbol,
-        direction: positionData.direction, // "LONG" 或 "SHORT"
+        symbol: tradeData.symbol,
+        direction: tradeData.direction, // "LONG" 或 "SHORT"
         status: 'open', // 新增時預設為 open
         followedDiscipline: 'pending', // 新增時預設為 pending
-        strategy: positionData.strategy || null,
-        createdAt: positionData.createdAt, // 已經是 YYYY-MM-DD 格式
-        closedAt: positionData.closedAt || null,
-        note: positionData.note || null,
+        strategy: tradeData.strategy || null,
+        createdAt: tradeData.createdAt, // 已經是 YYYY-MM-DD 格式
+        closedAt: tradeData.closedAt || null,
+        note: tradeData.note || null,
       }
 
-      // 調用 service 層的 addTrade
-      const [error, result] = await to(tradesService.addTrade(payload))
+      // 使用 hook 的 createTrade 方法
+      const [error, result] = await createTrade(payload)
 
       if (error) {
         message.error(error.msg || error.message || '新增交易記錄失敗')
@@ -137,8 +144,7 @@ const Transactions = () => {
       }
 
       message.success('交易記錄已新增')
-      // 重新載入資料以確保資料一致性
-      await refetchTrades()
+      // 不需要手動 refetch，hook 會自動處理
     } catch (err) {
       console.error('新增交易記錄失敗:', err)
       message.error('新增交易記錄失敗，請稍後再試')
@@ -148,7 +154,7 @@ const Transactions = () => {
   // 處理編輯 - 彈出新增倉位 modal
   const handleEdit = (record) => {
     setSelectedRecord(record)
-    setAddFillModalVisible(true)
+    setAddPositionModalVisible(true)
   }
 
   // 處理查看詳情
@@ -167,14 +173,14 @@ const Transactions = () => {
   }
 
   // 關閉新增倉位 modal
-  const handleCloseAddFillModal = () => {
-    setAddFillModalVisible(false)
+  const handleCloseAddPositionModal = () => {
+    setAddPositionModalVisible(false)
     setSelectedRecord(null)
   }
 
-  // 關閉新增 position modal
-  const handleCloseAddPositionModal = () => {
-    setAddPositionModalVisible(false)
+  // 關閉新增 trade modal
+  const handleCloseAddTradeModal = () => {
+    setAddTradeModalVisible(false)
   }
 
   // 保存檢討
@@ -209,13 +215,13 @@ const Transactions = () => {
   }
 
   // 添加倉位記錄
-  const handleAddFill = async (recordKey, fillData) => {
+  const handleAddPosition = async (recordKey, positionData) => {
     // 重新載入資料以確保資料一致性
     await refetchTrades()
   }
 
   // 編輯倉位記錄
-  const handleEditFill = async (recordKey, fillIndex, fillData) => {
+  const handleEditPosition = async (recordKey, positionIndex, positionData) => {
     // 重新載入資料以確保資料一致性
     await refetchTrades()
   }
@@ -228,7 +234,7 @@ const Transactions = () => {
     }))
   }
   // 刪除倉位記錄
-  const handleDeleteFill = async (recordKey, fillIndex) => {
+  const handleDeletePosition = async (recordKey, positionIndex) => {
     // 重新載入資料以確保資料一致性
     await refetchTrades()
   }
@@ -694,22 +700,22 @@ const Transactions = () => {
           onClose={handleCloseDrawer}
           tradeId={tradeId}
           onSaveReview={handleSaveReview}
-          onAddFill={handleAddFill}
-          onEditFill={handleEditFill}
-          onDeleteFill={handleDeleteFill}
-        />
-
-        <AddFillModal
-          visible={addFillModalVisible}
-          onClose={handleCloseAddFillModal}
-          onSave={handleAddFill}
-          selectedRecord={selectedRecord}
+          onAddPosition={handleAddPosition}
+          onEditPosition={handleEditPosition}
+          onDeletePosition={handleDeletePosition}
         />
 
         <AddPositionModal
           visible={addPositionModalVisible}
           onClose={handleCloseAddPositionModal}
           onSave={handleAddPosition}
+          selectedRecord={selectedRecord}
+        />
+
+        <AddTradeModal
+          visible={addTradeModalVisible}
+          onClose={handleCloseAddTradeModal}
+          onSave={handleAddTrade}
         />
       </div>
   </div>

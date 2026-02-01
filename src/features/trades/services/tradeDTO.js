@@ -45,11 +45,11 @@ const convertDiscipline = (followedDiscipline) => {
 }
 
 /**
- * 轉換倉位調整（Fill）：API 格式 → 前端格式
+ * 轉換倉位調整（Position）：API 格式 → 前端格式
  * @param {Object} adjustment API 的 positionAdjustment
- * @returns {Object} 前端的 fill
+ * @returns {Object} 前端的 position
  */
-const convertFill = (adjustment) => {
+const convertPosition = (adjustment) => {
   return {
     key: adjustment.id,
     id: adjustment.id,
@@ -111,7 +111,7 @@ export const tradeDTO = {
       exitReason: apiTrade.exitReason || '',
       
       // 倉位調整
-      positionAdjustments: (apiTrade.positionAdjustments || []).map(convertFill),
+      positionAdjustments: (apiTrade.positionAdjustments || []).map(convertPosition),
       
       // 保留原始資料以備不時之需
       _raw: apiTrade,

@@ -7,6 +7,7 @@ export const useTrades = (params = {}, enabled = true) => {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [creating, setCreating] = useState(false)
 
   const fetchTrades = useCallback(async () => {
     setLoading(true)
@@ -26,6 +27,25 @@ export const useTrades = (params = {}, enabled = true) => {
     return { err, result }
   }, [params.page, params.pageSize, params.symbol, params.strategy, params.direction, params.status])
 
+  // Create 操作
+  const createTrade = useCallback(async (payload) => {
+    setCreating(true)
+    setError(null)
+
+    const [err, result] = await to(tradesService.addTrade(payload))
+
+    if (err) {
+      setError(err)
+      setCreating(false)
+      return { err, result: null }
+    }
+
+    // 成功後自動重新載入列表
+    await fetchTrades()
+    setCreating(false)
+    return { err: null, result }
+  }, [fetchTrades])
+
   useEffect(() => {
     if (enabled) {
       fetchTrades()
@@ -37,6 +57,8 @@ export const useTrades = (params = {}, enabled = true) => {
     loading,
     error,
     refetch: fetchTrades,
+    createTrade,
+    creating,
   }
 }
 

@@ -72,9 +72,9 @@ const TradeDrawer = ({
   onClose, 
   tradeId, 
   onSaveReview, 
-  onAddFill, 
-  onEditFill, 
-  onDeleteFill 
+  onAddPosition, 
+  onEditPosition, 
+  onDeletePosition 
 }) => {
   // ------------------ hooks ------------------
   // 使用 useTrade hook 獲取交易詳情
@@ -115,7 +115,7 @@ const TradeDrawer = ({
     { value: 'NEUTRAL', label: '平靜', color: '#8c8c8c' }
   ]
 
-  const fillColumns = [
+  const positionColumns = [
     {
       title: '日期',
       dataIndex: 'date',
@@ -190,7 +190,7 @@ const TradeDrawer = ({
             />
             <Popconfirm 
               title="確定要刪除這筆記錄嗎？" 
-              onConfirm={() => handleDeleteFill(record.key)}
+              onConfirm={() => handleDeletePosition(record.key)}
               okText="確定"
               cancelText="取消"
             >
@@ -237,8 +237,8 @@ const TradeDrawer = ({
         newData.splice(index, 1, updatedItem);
         
         // 調用父組件的更新函數
-        if (onEditFill) {
-          onEditFill(tradeId, index, updatedItem);
+        if (onEditPosition) {
+          onEditPosition(tradeId, index, updatedItem);
         }
         message.success('倉位記錄已更新');
         setEditingKey('');
@@ -250,7 +250,7 @@ const TradeDrawer = ({
     }
   };
 
-  const mergedColumns = fillColumns.map(col => {
+  const mergedColumns = positionColumns.map(col => {
     if (!col.editable) {
       return col;
     }
@@ -272,16 +272,16 @@ const TradeDrawer = ({
     };
   });
 
-  const handleAddFill = () => {
-    if (onAddFill) {
-      onAddFill(tradeId);
+  const handleAddPosition = () => {
+    if (onAddPosition) {
+      onAddPosition(tradeId);
     }
     message.success('請使用新增倉位功能');
   }
 
-  const handleDeleteFill = (key) => {
-    if (onDeleteFill) {
-      onDeleteFill(tradeId, key);
+  const handleDeletePosition = (key) => {
+    if (onDeletePosition) {
+      onDeletePosition(tradeId, key);
     }
     message.success('倉位記錄已刪除');
     refetchTrade();
@@ -460,7 +460,7 @@ const TradeDrawer = ({
                 icon={<PlusOutlined />} 
                 size='small'
                 className='rounded-sm text-grey-400 bg-white bd-grey-200 shadow-none hover:bg-white'
-                onClick={handleAddFill}
+                onClick={handleAddPosition}
               >
                 新增倉位
               </Button>
