@@ -45,18 +45,26 @@ const EditableCell = ({
       : inputType === 'date' 
         ? <DatePicker format="YYYY-MM-DD" /> 
         : <Input />;
+  
+  // 停損價和備註是非必填欄位
+  const isOptional = dataIndex === 'stopLoss' || dataIndex === 'note'
+  
   return (
     <td {...restProps}>
       {editing ? (
         <Form.Item
           name={dataIndex}
           style={{ margin: 0 }}
-          rules={[
-            {
-              required: true,
-              message: `Please Input ${title}!`,
-            },
-          ]}
+          rules={
+            isOptional
+              ? [] // 非必填欄位不需要驗證規則
+              : [
+                  {
+                    required: true,
+                    message: `請輸入 ${title}!`,
+                  },
+                ]
+          }
         >
           {inputNode}
         </Form.Item>
@@ -74,11 +82,24 @@ const TradeDrawer = ({
   onSaveReview, 
   onAddPosition, 
   onEditPosition, 
-  onDeletePosition 
+  onDeletePosition,
+  onPositionAddedRef // 用於存儲刷新函數的 ref
 }) => {
   // ------------------ hooks ------------------
   // 使用 useTrade hook 獲取交易詳情
   const { data: tradeData, loading: tradeLoading, error: tradeError, refetch: refetchTrade } = useTrade(tradeId, visible)
+  
+  // 將 refetchTrade 函數存儲到 ref 中，讓父組件可以調用
+  React.useEffect(() => {
+    if (onPositionAddedRef) {
+      onPositionAddedRef.current = refetchTrade
+    }
+    return () => {
+      if (onPositionAddedRef) {
+        onPositionAddedRef.current = null
+      }
+    }
+  }, [refetchTrade, onPositionAddedRef])
 
   // ------------------ variables ------------------
   const [reviewForm] = Form.useForm() // 檢討表單
@@ -191,7 +212,7 @@ const TradeDrawer = ({
             />
             <Popconfirm 
               title="確定要刪除這筆記錄嗎？" 
-              onConfirm={() => handleDeletePosition(record.key)}
+              onConfirm={() => handleDeletePosition(record.id || record.key)}
               okText="確定"
               cancelText="取消"
             >
@@ -226,22 +247,20 @@ const TradeDrawer = ({
     try {
       const row = await form.validateFields();
       const newData = [...positionAdjustments];
-      const index = newData.findIndex(item => key === item.key);
+      const index = newData.findIndex(item => key === item.key || key === item.id);
       
       if (index > -1) {
         const item = newData[index];
         const updatedItem = {
           ...item,
           ...row,
-          date: row.date ? row.date.format('YYYY-MM-DD') : null
+          date: row.date || item.date, // 保持 dayjs 物件或字符串，DTO 會處理
         };
-        newData.splice(index, 1, updatedItem);
         
-        // 調用父組件的更新函數
+        // 調用父組件的更新函數，傳遞 positionId 和更新資料
         if (onEditPosition) {
-          onEditPosition(tradeId, index, updatedItem);
+          await onEditPosition(tradeId, item.id || item.key, updatedItem);
         }
-        message.success('倉位記錄已更新');
         setEditingKey('');
         // 重新載入資料
         refetchTrade();
@@ -277,15 +296,14 @@ const TradeDrawer = ({
     if (onAddPosition) {
       onAddPosition(tradeId);
     }
-    message.success('請使用新增倉位功能');
   }
 
-  const handleDeletePosition = (key) => {
+  const handleDeletePosition = async (positionIdOrKey) => {
     if (onDeletePosition) {
-      onDeletePosition(tradeId, key);
+      await onDeletePosition(tradeId, positionIdOrKey);
+      // 重新載入資料
+      refetchTrade();
     }
-    message.success('倉位記錄已刪除');
-    refetchTrade();
   }
 
   // 初始化表單資料

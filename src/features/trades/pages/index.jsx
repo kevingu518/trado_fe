@@ -1,5 +1,5 @@
 // src/pages/Transactions/index.jsx
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useRef } from 'react'
 
 import { Table, Tag, Button, Space, message, Card, Row, Col, Switch, Rate, Tooltip, DatePicker, Select, Pagination } from 'antd'
 
@@ -11,6 +11,7 @@ import { to } from 'await-to-js'
 
 import { useTrades } from '../hooks/useTrades'
 import { tradesService } from '../services/trades'
+import { positionsService } from '../services/positions'
 
 import AddTradeModal from '../components/AddTradeModal'
 import AddPositionModal from '../components/AddPositionModal'
@@ -183,9 +184,31 @@ const Transactions = () => {
   }
 
   // 處理新增倉位 - 彈出新增倉位 modal
-  const handleOpenAddPositionModal = (record) => {
-    setSelectedRecord(record)
-    setAddPositionModalVisible(true)
+  const handleOpenAddPositionModal = (recordOrTradeId) => {
+    // 如果傳入的是 tradeId（從 TradeDrawer），需要找到對應的 record
+    if (typeof recordOrTradeId === 'string' || typeof recordOrTradeId === 'number') {
+      // 從 tradesData 中找到對應的交易記錄
+      const tradeRecord = tradesData?.list?.find(t => t.id === recordOrTradeId || t.id === String(recordOrTradeId)) || 
+                          tradesData?.find(t => t.id === recordOrTradeId || t.id === String(recordOrTradeId))
+      if (tradeRecord) {
+        setSelectedRecord(tradeRecord)
+        setAddPositionModalVisible(true)
+      } else {
+        // 如果找不到記錄，但 drawer 是打開的且當前 selectedRecord 的 id 匹配
+        if (drawerVisible && selectedRecord && (selectedRecord.id === recordOrTradeId || selectedRecord.id === String(recordOrTradeId))) {
+          // 使用現有的 selectedRecord，不要覆蓋
+          setAddPositionModalVisible(true)
+        } else {
+          // 如果找不到記錄，直接使用 tradeId（AddPositionModal 會處理）
+          setSelectedRecord({ id: recordOrTradeId })
+          setAddPositionModalVisible(true)
+        }
+      }
+    } else {
+      // 如果傳入的是 record 物件
+      setSelectedRecord(recordOrTradeId)
+      setAddPositionModalVisible(true)
+    }
   }
 
   // 處理查看詳情
@@ -206,7 +229,9 @@ const Transactions = () => {
   // 關閉新增倉位 modal
   const handleCloseAddPositionModal = () => {
     setAddPositionModalVisible(false)
-    setSelectedRecord(null)
+    // 不要立即清空 selectedRecord，因為可能還在 drawer 中
+    // 只有在 drawer 關閉時才清空
+    // setSelectedRecord(null)
   }
 
   // 關閉新增/編輯 trade modal
@@ -248,16 +273,76 @@ const Transactions = () => {
     }
   }
 
+  // 使用 ref 來存儲 TradeDrawer 的刷新函數
+  const onPositionAddedRef = useRef(null)
+
   // 添加倉位記錄
-  const handleAddPositionToTrade = async (recordKey, positionData) => {
-    // 重新載入資料以確保資料一致性
-    await refetchTrades()
+  const handleAddPositionToTrade = async (tradeId, positionData) => {
+    try {
+      if (!tradeId) {
+        message.error('交易 ID 不存在')
+        return
+      }
+
+      // 使用 positionsService 新增倉位
+      const [error, result] = await to(positionsService.addPosition(tradeId, positionData))
+
+      if (error) {
+        message.error(error.msg || error.message || '新增倉位失敗')
+        return
+      }
+
+      message.success('倉位記錄已添加')
+      
+      // 重新載入交易列表以確保資料一致性
+      await refetchTrades()
+      
+      // 如果 drawer 是打開的且當前 tradeId 匹配，觸發 TradeDrawer 刷新
+      if (drawerVisible && (selectedRecord?.id === tradeId || tradeId === selectedRecord?.id)) {
+        // 通知 TradeDrawer 刷新資料
+        if (onPositionAddedRef.current) {
+          onPositionAddedRef.current()
+        }
+        // 更新 selectedRecord 以確保資料是最新的（從 refetchTrades 後的資料中獲取）
+        // 但不要清空，因為可能還要繼續新增
+      }
+    } catch (err) {
+      console.error('新增倉位失敗:', err)
+      message.error('新增倉位失敗，請稍後再試')
+    }
   }
 
   // 編輯倉位記錄
-  const handleEditPosition = async (recordKey, positionIndex, positionData) => {
-    // 重新載入資料以確保資料一致性
-    await refetchTrades()
+  const handleEditPosition = async (tradeId, positionId, positionData) => {
+    try {
+      if (!tradeId || !positionId) {
+        message.error('交易 ID 或倉位 ID 不存在')
+        return
+      }
+
+      // 使用 positionsService 更新倉位
+      const [error, result] = await to(positionsService.editPosition(tradeId, positionId, positionData))
+
+      if (error) {
+        message.error(error.msg || error.message || '更新倉位失敗')
+        return
+      }
+
+      message.success('倉位記錄已更新')
+      
+      // 重新載入交易列表以確保資料一致性
+      await refetchTrades()
+      
+      // 如果 drawer 是打開的且當前 tradeId 匹配，觸發 TradeDrawer 刷新
+      if (drawerVisible && selectedRecord?.id === tradeId) {
+        if (onPositionAddedRef.current) {
+          onPositionAddedRef.current()
+        }
+      }
+    } catch (err) {
+      console.error('更新倉位失敗:', err)
+      message.error('更新倉位失敗，請稍後再試')
+    }
   }
   // 分頁
   const handlePagination = (page, pageSize) => {
@@ -267,10 +352,38 @@ const Transactions = () => {
       pageSize: pageSize
     }))
   }
+
   // 刪除倉位記錄
-  const handleDeletePosition = async (recordKey, positionIndex) => {
-    // 重新載入資料以確保資料一致性
-    await refetchTrades()
+  const handleDeletePosition = async (tradeId, positionId) => {
+    try {
+      if (!tradeId || !positionId) {
+        message.error('交易 ID 或倉位 ID 不存在')
+        return
+      }
+
+      // 使用 positionsService 刪除倉位
+      const [error, result] = await to(positionsService.removePosition(tradeId, positionId))
+
+      if (error) {
+        message.error(error.msg || error.message || '刪除倉位失敗')
+        return
+      }
+
+      message.success('倉位記錄已刪除')
+      
+      // 重新載入交易列表以確保資料一致性
+      await refetchTrades()
+      
+      // 如果 drawer 是打開的且當前 tradeId 匹配，觸發 TradeDrawer 刷新
+      if (drawerVisible && selectedRecord?.id === tradeId) {
+        if (onPositionAddedRef.current) {
+          onPositionAddedRef.current()
+        }
+      }
+    } catch (err) {
+      console.error('刪除倉位失敗:', err)
+      message.error('刪除倉位失敗，請稍後再試')
+    }
   }
 
   // 處理行展開
@@ -746,6 +859,7 @@ const Transactions = () => {
           onAddPosition={handleOpenAddPositionModal}
           onEditPosition={handleEditPosition}
           onDeletePosition={handleDeletePosition}
+          onPositionAddedRef={onPositionAddedRef}
         />
 
         <AddPositionModal

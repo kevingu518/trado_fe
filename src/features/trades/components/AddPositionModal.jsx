@@ -24,17 +24,32 @@ const AddPositionModal = ({
     try {
       const values = await form.validateFields()
       const positionData = {
-        ...values,
-        date: values.date.format('YYYY-MM-DD'),
-        stopLoss: values.stopLoss || null // 停損價可能為空
+        action: values.action,
+        shares: values.shares,
+        price: values.price,
+        date: values.date, // 保持 dayjs 物件，DTO 會處理轉換
+        stopLoss: values.stopLoss || null, // 停損價可能為空
+        note: values.note || null, // 備註可能為空
       }
 
-      onSave(selectedRecord.key, positionData)
+      // 確保 selectedRecord 存在且有 id
+      if (!selectedRecord) {
+        message.error('交易記錄不存在，請重新選擇')
+        return
+      }
+
+      const tradeId = selectedRecord.id || selectedRecord.key
+      if (!tradeId) {
+        message.error('交易 ID 不存在')
+        return
+      }
+
+      await onSave(tradeId, positionData)
       form.resetFields()
       onClose()
-      message.success('倉位記錄已添加')
     } catch (error) {
       console.error('保存失敗:', error)
+      // 錯誤訊息由父組件處理
     }
   }
 

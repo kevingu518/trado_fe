@@ -19,3 +19,20 @@ export const updateTradeApi = (tradeId, data) => request.put(`/trades/${tradeId}
 
 // Delete - 刪除交易
 export const deleteTradeApi = (tradeId) => request.delete(`/trades/${tradeId}`)
+
+// ========== Position (倉位) 相關 API ==========
+
+// Read - 取得交易的所有倉位
+export const getPositionsApi = (tradeId, params = {}) => request.get(`/trades/${tradeId}/positions`, { params })
+
+// Read - 取得單筆倉位
+export const getPositionApi = (tradeId, positionId) => request.get(`/trades/${tradeId}/positions/${positionId}`)
+
+// Create - 新增倉位
+export const createPositionApi = (tradeId, data) => request.post(`/trades/${tradeId}/positions`, data)
+
+// Update - 更新倉位
+export const updatePositionApi = (tradeId, positionId, data) => request.put(`/trades/${tradeId}/positions/${positionId}`, data)
+
+// Delete - 刪除倉位
+export const deletePositionApi = (tradeId, positionId) => request.delete(`/trades/${tradeId}/positions/${positionId}`)
