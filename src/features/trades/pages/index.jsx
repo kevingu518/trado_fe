@@ -16,6 +16,7 @@ import { positionsService } from '../services/positions'
 import AddTradeModal from '../components/AddTradeModal'
 import AddPositionModal from '../components/AddPositionModal'
 import TradeDrawer from '../components/TradeDrawer'
+import KLineChart from '../components/KLineChart'
 
 const { RangePicker } = DatePicker;
 
@@ -37,7 +38,7 @@ const Transactions = () => {
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
-    total: 50,
+    total: 0, // 初始值改為 0，等待 API 回傳實際資料
     showSizeChanger: true,
     // showQuickJumper: true,
     showTotal: (total, range) => 
@@ -76,12 +77,29 @@ const Transactions = () => {
 
   // 當 API 資料載入成功時，更新 pagination
   useEffect(() => {
-    if (tradesData && tradesData.list) {
+    if (tradesData) {
+      // 如果 API 返回的資料格式是 { list, total, page, pageSize }
+      if (tradesData.list && Array.isArray(tradesData.list)) {
+        setPagination(prev => ({
+          ...prev,
+          total: tradesData.total || tradesData.list.length, // 如果沒有 total，使用 list.length
+          current: tradesData.page || prev.current,
+          pageSize: tradesData.pageSize || prev.pageSize,
+        }))
+      } 
+      // 如果 API 直接返回陣列
+      else if (Array.isArray(tradesData)) {
+        setPagination(prev => ({
+          ...prev,
+          total: tradesData.length, // 使用陣列長度作為 total
+          // current 和 pageSize 保持不變
+        }))
+      }
+    } else {
+      // 如果沒有資料，重置 total
       setPagination(prev => ({
         ...prev,
-        total: tradesData.total || 0,
-        current: tradesData.page || prev.current,
-        pageSize: tradesData.pageSize || prev.pageSize,
+        total: 0,
       }))
     }
   }, [tradesData])
@@ -400,9 +418,9 @@ const Transactions = () => {
     return (
       <div style={{ maxWidth: '1280px' }} className='expandedRow trans-center py-md'>
         <Row gutter={8}>
-          {/* 左側：倉位記錄 */}
+          {/* 左側：倉位記錄和 K 線圖 */}
           <Col span={16} className='relative'>
-            <Card title="倉位記錄" size="small" className='expandedRow_fills'>
+            <Card title="倉位記錄" size="small" className='expandedRow_fills' style={{ marginBottom: 16 }}>
               <Table
                 className='my-sm'
                 rowClassName=""
@@ -446,10 +464,16 @@ const Transactions = () => {
                 pagination={false}
                 size='small'
               />
-
             </Card>
-            {/* <Card title="倉位記錄" size="small" style={{ marginBottom: 16 }}>
-            </Card> */}
+            
+            {/* K 線圖 */}
+            <Card title="K 線圖" size="small">
+              <KLineChart 
+                symbol={record.symbol} 
+                positions={record.positionAdjustments || []}
+                height={400}
+              />
+            </Card>
           </Col>
 
           {/* 右側：檢討內容 */}
