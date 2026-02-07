@@ -3,6 +3,37 @@
     .ant-select-selector{
       border-radius: 2px !important;
     }
+    
+    // 有值時稍微深一點的邊框
+    .ant-select.has-value .ant-select-selector,
+    .ant-picker.has-value .ant-picker-input {
+      border-color: #8c8c8c !important; // 有值時稍微深一點（原本是 #d9d9d9）
+    }
+    
+    // 重置按鈕樣式（與 filter 風格一致）
+    .reset-filter-btn {
+      border: 1px solid #d9d9d9 !important;
+      border-radius: 2px !important;
+      color: #595959;
+      background: #fff;
+      transition: all 0.2s;
+      
+      &:hover {
+        border-color: #40a9ff !important; // 與 Ant Design 輸入框 hover 顏色一致
+        color: #262626;
+        background: #fafafa;
+      }
+      
+      &:active {
+        border-color: #1890ff !important; // 與 Ant Design 輸入框 focus 顏色一致
+        background: #f5f5f5;
+      }
+      
+      .anticon {
+        font-size: 12px;
+        margin-right: 4px;
+      }
+    }
   }
   .container{
     height: calc(100% - 124px);

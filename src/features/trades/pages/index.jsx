@@ -1,11 +1,12 @@
 // src/pages/Transactions/index.jsx
 import React, { useState, useEffect, useMemo, useRef } from 'react'
+import dayjs from 'dayjs'
 
 import { Table, Tag, Button, Space, message, Card, Row, Col, Switch, Rate, Tooltip, DatePicker, Select, Pagination, Tabs, Statistic, Dropdown } from 'antd'
 
 const { Option } = Select;
 const { TabPane } = Tabs;
-import { EditOutlined, EyeOutlined, PlusOutlined, CheckOutlined, CloseOutlined, MinusOutlined, DownOutlined, FileTextOutlined, ClockCircleOutlined, DollarOutlined } from '@ant-design/icons'
+import { EditOutlined, EyeOutlined, PlusOutlined, CheckOutlined, CloseOutlined, MinusOutlined, DownOutlined, FileTextOutlined, ClockCircleOutlined, DollarOutlined, ClearOutlined } from '@ant-design/icons'
 import PerfectScrollbar from 'react-perfect-scrollbar'
 import 'react-perfect-scrollbar/dist/css/styles.css';
 import { to } from 'await-to-js'
@@ -25,9 +26,12 @@ const Transactions = () => {
   // -------------------------   variables   ----------------------------
 
   // 新增過濾器狀態（使用後端命名）
-  const [symbolFilter, setSymbolFilter] = useState(null)
-  const [strategyFilter, setStrategyFilter] = useState(null)
-  const [directionFilter, setDirectionFilter] = useState(null)
+  // Filter states
+  const [dateRange, setDateRange] = useState(null) // 時間範圍
+  const [symbolFilter, setSymbolFilter] = useState(null) // 股票號碼
+  const [directionFilter, setDirectionFilter] = useState(null) // 多空方向
+  const [statusFilter, setStatusFilter] = useState('all') // 交易狀態
+  const [strategyFilter, setStrategyFilter] = useState(null) // 策略
 
   const [drawerVisible, setDrawerVisible] = useState(false)
   const [addPositionModalVisible, setAddPositionModalVisible] = useState(false)
@@ -35,7 +39,6 @@ const Transactions = () => {
   const [editingTrade, setEditingTrade] = useState(null) // 正在編輯的交易資料
   const [selectedRecord, setSelectedRecord] = useState(null)
   const [expandedRowKeys, setExpandedRowKeys] = useState([])
-  const [quickFilter, setQuickFilter] = useState('all')
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
@@ -60,10 +63,12 @@ const Transactions = () => {
   } = useTrades({
     page: pagination.current,
     pageSize: pagination.pageSize,
-    symbol: symbolFilter, // 改用後端命名
-    strategy: strategyFilter,
+    startDate: dateRange?.[0]?.format('YYYY-MM-DD'),
+    endDate: dateRange?.[1]?.format('YYYY-MM-DD'),
+    symbol: symbolFilter,
     direction: directionFilter,
-    status: quickFilter === 'open' ? 'open' : quickFilter === 'completed' ? 'completed' : undefined,
+    status: statusFilter === 'all' ? undefined : statusFilter,
+    strategy: strategyFilter,
   })
 
   // 從 tradesData 取得要顯示的資料
@@ -825,10 +830,14 @@ const Transactions = () => {
           <div className="useStart gap-sm">
             <RangePicker
               placeholder={['開始時間', '結束時間']}
-              className='rounded-xs'
+              className={`rounded-xs ${dateRange ? 'has-value' : ''}`}
+              value={dateRange}
+              onChange={setDateRange}
+              format="YYYY-MM-DD"
+              style={{ width: 240 }}
             />
             <Select
-              className='rounded-xs'
+              className={`rounded-xs ${symbolFilter ? 'has-value' : ''}`}
               value={symbolFilter}
               onChange={setSymbolFilter}
               placeholder="股票號碼"
@@ -840,7 +849,7 @@ const Transactions = () => {
               ))}
             </Select>
             <Select
-              className='rounded-xs'
+              className={`rounded-xs ${strategyFilter ? 'has-value' : ''}`}
               value={strategyFilter}
               onChange={setStrategyFilter}
               placeholder="策略"
@@ -852,7 +861,7 @@ const Transactions = () => {
               ))}
             </Select>
             <Select
-              className='rounded-xs'
+              className={`rounded-xs ${directionFilter ? 'has-value' : ''}`}
               value={directionFilter}
               onChange={setDirectionFilter}
               placeholder="多空"
@@ -863,26 +872,34 @@ const Transactions = () => {
               <Option value="short">空</Option>
             </Select>
             <Select
-              className='rounded-xs'
-              value={quickFilter}
-              onChange={setQuickFilter}
-              style={{ width: 160 }}
+              className={`rounded-xs ${statusFilter !== 'all' ? 'has-value' : ''}`}
+              value={statusFilter}
+              onChange={setStatusFilter}
+              placeholder="交易狀態"
+              style={{ width: 140 }}
             >
               <Option value="all">全部</Option>
-              <Option value="open">僅顯示持倉中</Option>
-              <Option value="completed">僅顯示已清倉</Option>
-              <Option value="loss">僅顯示虧損單</Option>
-              <Option value="profit">僅顯示盈利單</Option>
+              <Option value="open">持倉中</Option>
+              <Option value="completed">已清倉</Option>
             </Select>
             {/* 重置按鈕 */}
-            {(symbolFilter || strategyFilter || directionFilter || quickFilter !== 'all') && (
+            {(dateRange || symbolFilter || strategyFilter || directionFilter || statusFilter !== 'all') && (
               <Button 
                 size="small"
+                className='rounded-xs reset-filter-btn'
+                icon={<ClearOutlined />}
                 onClick={() => {
+                  setDateRange(null)
                   setSymbolFilter(null)
                   setStrategyFilter(null)
                   setDirectionFilter(null)
-                  setQuickFilter('all')
+                  setStatusFilter('all')
+                }}
+                style={{ 
+                  height: '32px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
                 }}
               >
                 重置
