@@ -406,8 +406,8 @@ const TradeDrawer = ({
                     {tradeData.symbol}
                   </Descriptions.Item>
                   <Descriptions.Item label="方向">
-                    <Tag color={tradeData.direction === 'LONG' ? 'green' : 'red'}>
-                      {tradeData.direction === 'LONG' ? '多' : '空'}
+                    <Tag color={tradeData.direction === 'long' ? 'green' : 'red'}>
+                      {tradeData.direction === 'long' ? '多' : '空'}
                     </Tag>
                   </Descriptions.Item>
                   <Descriptions.Item label="開倉日">

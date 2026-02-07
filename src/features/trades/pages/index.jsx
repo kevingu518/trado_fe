@@ -151,7 +151,7 @@ const Transactions = () => {
       // 準備 API payload（使用前端格式，DTO 會自動轉換）
       const payload = {
         symbol: tradeData.symbol,
-        direction: tradeData.direction, // "LONG" 或 "SHORT"
+        direction: tradeData.direction, // "long" 或 "short"
         status: 'open', // 新增時預設為 open
         followedDiscipline: 'pending', // 新增時預設為 pending
         strategy: tradeData.strategy || null,
@@ -631,8 +631,8 @@ const Transactions = () => {
       width: 70,
       align: 'center',
       render: (direction) => (
-        <Tag color={direction === 'LONG' ? 'green' : 'red'}>
-          {direction === 'LONG' ? '多' : '空'}
+        <Tag color={direction === 'long' ? 'green' : 'red'}>
+          {direction === 'long' ? '多' : '空'}
         </Tag>
       ),
     },
@@ -669,6 +669,31 @@ const Transactions = () => {
       render: (closedAt) => closedAt || <span style={{ color: '#999' }}>-</span>,
     },
     {
+      title: '持倉時間',
+      dataIndex: 'holdingDuration',
+      key: 'holdingDuration',
+      width: 100,
+      align: 'center',
+      sorter: (a, b) => {
+        const durationA = parseFloat(a.holdingDuration) || 0
+        const durationB = parseFloat(b.holdingDuration) || 0
+        return durationA - durationB
+      },
+      render: (holdingDuration) => {
+        if (!holdingDuration && holdingDuration !== 0) return <span style={{ color: '#999' }}>-</span>
+        return `${parseFloat(holdingDuration).toFixed(1)} 天`
+      },
+    },
+    {
+      title: '建倉次數',
+      dataIndex: 'entryCount',
+      key: 'entryCount',
+      width: 90,
+      align: 'center',
+      // sorter: (a, b) => (a.entryCount || 0) - (b.entryCount || 0),
+      render: (entryCount) => entryCount || 0,
+    },
+    {
       title: '結果',
       dataIndex: 'profitLoss',
       key: 'profitLoss',
@@ -701,6 +726,14 @@ const Transactions = () => {
           </div>
         )
       },
+    },
+    {
+      title: '策略',
+      dataIndex: 'strategy',
+      key: 'strategy',
+      width: 100,
+      align: 'center',
+      render: (strategy) => strategy || <span style={{ color: '#999' }}>-</span>,
     },
     {
       title: '紀律',
@@ -826,8 +859,8 @@ const Transactions = () => {
               allowClear
               style={{ width: 100 }}
             >
-              <Option value="LONG">多</Option>
-              <Option value="SHORT">空</Option>
+              <Option value="long">多</Option>
+              <Option value="short">空</Option>
             </Select>
             <Select
               className='rounded-xs'

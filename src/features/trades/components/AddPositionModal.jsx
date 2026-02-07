@@ -81,7 +81,7 @@ const AddPositionModal = ({
       >
         <div style={{ marginBottom: 16, padding: 12, background: '#f5f5f5', borderRadius: 6 }}>
           <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: 4 }}>
-            交易標的：{selectedRecord?.symbol} ({selectedRecord?.direction === 'LONG' ? '多' : '空'})
+            交易標的：{selectedRecord?.symbol} ({selectedRecord?.direction === 'long' ? '多' : '空'})
           </div>
           <div style={{ fontSize: '12px', color: '#666' }}>
             開倉日：{selectedRecord?.createdAt} | 狀態：{selectedRecord?.status === 'open' ? '持倉中' : '已完成'}

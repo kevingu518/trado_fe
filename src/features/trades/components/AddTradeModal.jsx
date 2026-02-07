@@ -40,7 +40,7 @@ const AddTradeModal = ({
       // 新增模式時重置表單
       form.resetFields()
       form.setFieldsValue({
-        direction: 'LONG',
+        direction: 'long',
         strategy: 'none',
       })
     }
@@ -140,12 +140,12 @@ const AddTradeModal = ({
             label="多空"
             name="direction"
             rules={isEditMode ? [] : [{ required: true, message: '請選擇多空' }]} // 編輯模式時非必填
-            initialValue="LONG"
+            initialValue="long"
           >
             <Segmented
               options={[
-                { label: '多', value: 'LONG' },
-                { label: '空', value: 'SHORT' }
+                { label: '多', value: 'long' },
+                { label: '空', value: 'short' }
               ]}
               block
             />
