@@ -27,7 +27,13 @@ export const tradesService = {
    * @returns {Object|Array} 轉換後的交易列表資料
    */
   async fetchTrades(params = {}) {
-    const apiResponse = await getTradesApi(params)
+    // 將前端的 pageSize 轉換為後端的 limit
+    const apiParams = { ...params }
+    if (apiParams.pageSize !== undefined) {
+      apiParams.limit = apiParams.pageSize
+      delete apiParams.pageSize
+    }
+    const apiResponse = await getTradesApi(apiParams)
     // 使用 DTO 轉換 API 資料為前端格式
     return tradeDTO.toFrontendList(apiResponse)
   },

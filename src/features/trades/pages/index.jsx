@@ -1,10 +1,11 @@
 // src/pages/Transactions/index.jsx
 import React, { useState, useEffect, useMemo, useRef } from 'react'
 
-import { Table, Tag, Button, Space, message, Card, Row, Col, Switch, Rate, Tooltip, DatePicker, Select, Pagination } from 'antd'
+import { Table, Tag, Button, Space, message, Card, Row, Col, Switch, Rate, Tooltip, DatePicker, Select, Pagination, Tabs, Statistic, Dropdown } from 'antd'
 
 const { Option } = Select;
-import { EditOutlined, EyeOutlined, PlusOutlined, CheckOutlined, CloseOutlined, MinusOutlined } from '@ant-design/icons'
+const { TabPane } = Tabs;
+import { EditOutlined, EyeOutlined, PlusOutlined, CheckOutlined, CloseOutlined, MinusOutlined, DownOutlined, FileTextOutlined, ClockCircleOutlined, DollarOutlined } from '@ant-design/icons'
 import PerfectScrollbar from 'react-perfect-scrollbar'
 import 'react-perfect-scrollbar/dist/css/styles.css';
 import { to } from 'await-to-js'
@@ -416,88 +417,83 @@ const Transactions = () => {
   // 修改展開內容組件
   const expandedRowRender = (record) => {
     return (
-      <div style={{ maxWidth: '1280px' }} className='expandedRow trans-center py-md'>
-        <Row gutter={8}>
-          {/* 左側：倉位記錄和 K 線圖 */}
-          <Col span={16} className='relative'>
-            <Card title="倉位記錄" size="small" className='expandedRow_fills' style={{ marginBottom: 16 }}>
-              <Table
-                className='my-sm'
-                rowClassName=""
-                columns={[
-                  { title: '日期', dataIndex: 'date', key: 'date', width: 120 },
-                  { 
-                    title: '動作', 
-                    dataIndex: 'action', 
-                    key: 'action', 
-                    width: 80,
-                    render: (action) => (
-                      <Tag color={action === 'buy' ? 'green' : 'red'}>
-                        {action === 'buy' ? '買入' : '賣出'}
-                      </Tag>
-                    )
-                  },
-                  { 
-                    title: '價格', 
-                    dataIndex: 'price', 
-                    key: 'price', 
-                    width: 100,
-                    render: (price) => `$${price}`
-                  },
-                  { 
-                    title: '數量', 
-                    dataIndex: 'shares', 
-                    key: 'shares', 
-                    width: 100,
-                    render: (shares) => shares.toLocaleString()
-                  },
-                  { 
-                    title: '停損價', 
-                    dataIndex: 'stopLoss', 
-                    key: 'stopLoss', 
-                    width: 100,
-                    render: (stopLoss) => stopLoss ? `$${stopLoss}` : '-'
-                  },
-                  { title: '備註', dataIndex: 'note', key: 'note', width: 200 },
-                ]}
-                dataSource={record.positionAdjustments || []}
-                pagination={false}
-                size='small'
-              />
-            </Card>
-            
-            {/* K 線圖 */}
-            <Card title="K 線圖" size="small">
-              <KLineChart 
-                symbol={record.symbol} 
-                positions={record.positionAdjustments || []}
-                height={400}
-              />
-            </Card>
-          </Col>
-
-          {/* 右側：檢討內容 */}
-          <Col span={8}>
-            {/* 蓋章樣式的紀律標記 */}
-            <div 
-              className='stamp-discipline absolute top-0 right-0 shadow-sm'
-              style={{
-                background: record.followedDiscipline === 'pass' 
-                  ? 'linear-gradient(135deg, #52c41a, #73d13d)' 
-                  : record.followedDiscipline === 'fail' 
-                  ? 'linear-gradient(135deg, #ff4d4f, #ff7875)' 
-                  : 'linear-gradient(135deg, #faad14, #ffc53d)',
-              }}
-            >
-              {/* <div style={{ fontSize: '10px', marginBottom: '2px' }}>紀律</div> */}
-              <div className='lh-xs' style={{ fontSize: '14px', fontWeight: 'bold' }}>
-                {record.followedDiscipline === 'pass' ? '✓' : record.followedDiscipline === 'fail' ? '✗' : '?'}
+      <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '16px' }} className='expandedRow Transactions-expandedRow'>
+        <Tabs defaultActiveKey="positions" size="small">
+          <TabPane tab="倉位記錄" key="positions">
+            <Table
+              className='my-sm'
+              rowClassName=""
+              columns={[
+                { title: '日期', dataIndex: 'date', key: 'date', width: 120 },
+                { 
+                  title: '動作', 
+                  dataIndex: 'action', 
+                  key: 'action', 
+                  width: 80,
+                  render: (action) => (
+                    <Tag color={action === 'buy' ? 'green' : 'red'}>
+                      {action === 'buy' ? '買入' : '賣出'}
+                    </Tag>
+                  )
+                },
+                { 
+                  title: '價格', 
+                  dataIndex: 'price', 
+                  key: 'price', 
+                  width: 100,
+                  render: (price) => `$${price}`
+                },
+                { 
+                  title: '數量', 
+                  dataIndex: 'shares', 
+                  key: 'shares', 
+                  width: 100,
+                  render: (shares) => shares.toLocaleString()
+                },
+                { 
+                  title: '停損價', 
+                  dataIndex: 'stopLoss', 
+                  key: 'stopLoss', 
+                  width: 100,
+                  render: (stopLoss) => stopLoss ? `$${stopLoss}` : '-'
+                },
+                { title: '備註', dataIndex: 'note', key: 'note', width: 200 },
+              ]}
+              dataSource={record.positionAdjustments || []}
+              pagination={false}
+              size='small'
+            />
+          </TabPane>
+          
+          <TabPane tab="K 線圖" key="kline">
+            <KLineChart 
+              symbol={record.symbol} 
+              positions={record.positionAdjustments || []}
+              height={500}
+            />
+          </TabPane>
+          
+          <TabPane tab="交易檢討" key="review">
+            <div className='relative' style={{ padding: '16px' }}>
+              {/* 蓋章樣式的紀律標記 */}
+              <div 
+                className='stamp-discipline absolute top-0 right-0 shadow-sm'
+                style={{
+                  background: record.followedDiscipline === 'pass' 
+                    ? 'linear-gradient(135deg, #52c41a, #73d13d)' 
+                    : record.followedDiscipline === 'fail' 
+                    ? 'linear-gradient(135deg, #ff4d4f, #ff7875)' 
+                    : 'linear-gradient(135deg, #faad14, #ffc53d)',
+                }}
+              >
+                <div className='lh-xs' style={{ fontSize: '14px', fontWeight: 'bold' }}>
+                  {record.followedDiscipline === 'pass' ? '✓' : record.followedDiscipline === 'fail' ? '✗' : '?'}
+                </div>
+                <div style={{ fontSize: '10px' }}>
+                  {record.followedDiscipline === 'pass' ? '紀律' : record.followedDiscipline === 'fail' ? '沒紀律' : '未定'}
+                </div>
               </div>
-              <div style={{ fontSize: '10px' }}>
-                {record.followedDiscipline === 'pass' ? '紀律' : record.followedDiscipline === 'fail' ? '沒紀律' : '未定'}
-              </div>
-            </div>
-            <Card title="交易檢討" size="small">
+              
               <Row gutter={16}>
                 {/* 檢討內容 */}
                 <Col span={24} style={{ marginBottom: 16 }}>
@@ -511,7 +507,7 @@ const Transactions = () => {
                       minHeight: 60,
                       border: '1px solid #d9d9d9'
                     }}>
-                      {record.review?.content || '尚未填寫檢討內容'}
+                      {record.review?.content || record.reviewNotes || '尚未填寫檢討內容'}
                     </div>
                   </div>
                 </Col>
@@ -521,9 +517,9 @@ const Transactions = () => {
                   <div style={{ marginBottom: 16 }}>
                     <strong>錯誤分類：</strong>
                     <div style={{ marginTop: 4 }}>
-                      {record.review?.errorCategory ? (
+                      {record.review?.errorCategory || record.errorCategory ? (
                         <Tag color="red">
-                          {errorCategories.find(cat => cat.value === record.review.errorCategory)?.label || record.review.errorCategory}
+                          {errorCategories.find(cat => cat.value === (record.review?.errorCategory || record.errorCategory))?.label || (record.review?.errorCategory || record.errorCategory)}
                         </Tag>
                       ) : (
                         <span style={{ color: '#999' }}>未選擇</span>
@@ -536,18 +532,18 @@ const Transactions = () => {
                   <div style={{ marginBottom: 16 }}>
                     <strong>當時情緒：</strong>
                     <div style={{ marginTop: 4 }}>
-                      {record.review?.emotion ? (
+                      {record.review?.emotion || record.emotion ? (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <div 
                             style={{ 
                               width: '12px', 
                               height: '12px', 
                               borderRadius: '50%', 
-                              backgroundColor: emotions.find(em => em.value === record.review.emotion)?.color || '#666'
+                              backgroundColor: emotions.find(em => em.value === (record.review?.emotion || record.emotion))?.color || '#666'
                             }} 
                           />
                           <span>
-                            {emotions.find(em => em.value === record.review.emotion)?.label || record.review.emotion}
+                            {emotions.find(em => em.value === (record.review?.emotion || record.emotion))?.label || (record.review?.emotion || record.emotion)}
                           </span>
                         </div>
                       ) : (
@@ -580,11 +576,11 @@ const Transactions = () => {
                   <div style={{ marginBottom: 16 }}>
                     <strong>自我評分：</strong>
                     <div style={{ marginTop: 4 }}>
-                      {record.review?.selfRating ? (
+                      {record.review?.selfRating || record.selfRating ? (
                         <Rate 
-                          value={record.review.selfRating}
+                          value={record.review?.selfRating || record.selfRating}
                           disabled
-                          allowHalf 
+                          allowHalf={false}
                           count={5}
                         />
                       ) : (
@@ -594,9 +590,9 @@ const Transactions = () => {
                   </div>
                 </Col>
               </Row>
-            </Card>
-          </Col>
-        </Row>
+            </div>
+          </TabPane>
+        </Tabs>
       </div>
     )
   }
@@ -619,7 +615,7 @@ const Transactions = () => {
     {
       title: '編號',
       key: 'index',
-      width: '16px',
+      width: 60,
       align: 'center',
       render: (_, record, index) => {
         // 計算當前頁的起始序號
@@ -632,7 +628,7 @@ const Transactions = () => {
       title: '方向',
       dataIndex: 'direction',
       key: 'direction',
-      width: '20px',
+      width: 70,
       align: 'center',
       render: (direction) => (
         <Tag color={direction === 'LONG' ? 'green' : 'red'}>
@@ -644,38 +640,65 @@ const Transactions = () => {
       title: '股號',
       dataIndex: 'symbol',
       key: 'symbol',
-      width: '32px',
+      width: 80,
       align: 'center',
     },
     {
       title: '開倉日',
       dataIndex: 'createdAt',
       key: 'createdAt',
-      width: '32px',
+      width: 110,
       align: 'center',
+      sorter: (a, b) => {
+        const dateA = new Date(a.createdAt || 0)
+        const dateB = new Date(b.createdAt || 0)
+        return dateA - dateB
+      },
     },
     {
       title: '清倉日',
       dataIndex: 'closedAt',
       key: 'closedAt',
-      width: '32px',
+      width: 110,
       align: 'center',
-      render: (closedAt) => closedAt || '-',
+      sorter: (a, b) => {
+        const dateA = new Date(a.closedAt || 0)
+        const dateB = new Date(b.closedAt || 0)
+        return dateA - dateB
+      },
+      render: (closedAt) => closedAt || <span style={{ color: '#999' }}>-</span>,
     },
     {
       title: '結果',
       dataIndex: 'profitLoss',
       key: 'profitLoss',
-      width: 120,
+      // 不設 width，讓它自動擴展佔用剩餘空間
       align: 'right',
+      sorter: (a, b) => (a.profitLoss || 0) - (b.profitLoss || 0),
       render: (profitLoss) => {
-        if (profitLoss === null) return '-'
+        if (profitLoss === null) return <span style={{ color: '#999' }}>-</span>
+        const isProfit = profitLoss > 0
         return (
-          <span style={{ 
-            color: profitLoss > 0 ? '#52c41a' : profitLoss < 0 ? '#ff4d4f' : '#666'
+          <div style={{ 
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'flex-end',
+            gap: '4px'
           }}>
-            {profitLoss > 0 ? '+' : ''}{profitLoss.toLocaleString()} 元
-          </span>
+            <span style={{ 
+              color: isProfit ? '#52c41a' : '#ff4d4f',
+              fontWeight: 'bold',
+              fontSize: '14px'
+            }}>
+              {isProfit ? '↑' : '↓'}
+            </span>
+            <span style={{ 
+              color: isProfit ? '#52c41a' : '#ff4d4f',
+              fontWeight: 'bold'
+            }}>
+              {profitLoss > 0 ? '+' : ''}{profitLoss.toLocaleString()} 元
+            </span>
+          </div>
         )
       },
     },
@@ -683,7 +706,7 @@ const Transactions = () => {
       title: '紀律',
       dataIndex: 'followedDiscipline',
       key: 'followedDiscipline',
-      width: '32px',
+      width: 90,
       align: 'center',
       render: (followedDiscipline) => {
         const disciplineConfig = {
@@ -704,8 +727,12 @@ const Transactions = () => {
       title: '狀態',
       dataIndex: 'status',
       key: 'status',
-      width: '32px',
+      width: 90,
       align: 'center',
+      sorter: (a, b) => {
+        const order = { 'open': 1, 'completed': 2 }
+        return (order[a.status] || 0) - (order[b.status] || 0)
+      },
       render: (status) => {
         const statusConfig = {
           open: { color: 'orange', text: '持倉中' },
@@ -718,48 +745,51 @@ const Transactions = () => {
     {
       title: '操作',
       key: 'action',
-      width: '32px',
+      width: 100,
       align: 'center',
+      fixed: 'right',
       render: (_, record) => (
-        <Space size="small">
-          <Tooltip placement="top" title="查看">
-            <Button
-              type="link"
-              icon={<EyeOutlined />}
-              onClick={() => handleView(record)}
-              size="small"
-              title="查看"
-            />
-          </Tooltip>
-          <Tooltip placement="top" title="編輯交易">
-            <Button
-              type="link"
-              icon={<EditOutlined />}
-              onClick={() => handleEditTrade(record)}
-              size="small"
-              title="編輯交易"
-            />
-          </Tooltip>
-          <Tooltip placement="top" title="新增倉位">
-            <Button
-              type="link"
-              icon={<PlusOutlined />}
-              onClick={() => handleOpenAddPositionModal(record)}
-              size="small"
-              title="新增倉位"
-            />
-          </Tooltip>
-        </Space>
+        <div onClick={(e) => e.stopPropagation()}>
+          <Dropdown
+            menu={{
+              items: [
+                {
+                  key: 'view',
+                  label: '查看詳情',
+                  icon: <EyeOutlined />,
+                  onClick: () => handleView(record),
+                },
+                {
+                  key: 'edit',
+                  label: '編輯交易',
+                  icon: <EditOutlined />,
+                  onClick: () => handleEditTrade(record),
+                },
+                {
+                  key: 'addPosition',
+                  label: '新增倉位',
+                  icon: <PlusOutlined />,
+                  onClick: () => handleOpenAddPositionModal(record),
+                },
+              ],
+            }}
+            trigger={['click']}
+          >
+            <Button type="link" size="small" onClick={(e) => e.stopPropagation()}>
+              操作 <DownOutlined />
+            </Button>
+          </Dropdown>
+        </div>
       ),
     },
   ]
 
   return (
-    <div className='h-full w-full p-base Transactions'>
+    <div className='h-full w-full p-base Transactions overflow-hidden'>
       <div className="card h-full">
         {/* header */}
         <div className='Transactions-header useBetween bg-white p-sm rounded-sm shadow-xs'>
-          <div>
+          <div className="useStart gap-sm">
             <RangePicker
               placeholder={['開始時間', '結束時間']}
               className='rounded-xs'
@@ -800,7 +830,7 @@ const Transactions = () => {
               <Option value="SHORT">空</Option>
             </Select>
             <Select
-              className='rounded-xs ml-sm'
+              className='rounded-xs'
               value={quickFilter}
               onChange={setQuickFilter}
               style={{ width: 160 }}
@@ -811,16 +841,21 @@ const Transactions = () => {
               <Option value="loss">僅顯示虧損單</Option>
               <Option value="profit">僅顯示盈利單</Option>
             </Select>
-
+            {/* 重置按鈕 */}
+            {(symbolFilter || strategyFilter || directionFilter || quickFilter !== 'all') && (
+              <Button 
+                size="small"
+                onClick={() => {
+                  setSymbolFilter(null)
+                  setStrategyFilter(null)
+                  setDirectionFilter(null)
+                  setQuickFilter('all')
+                }}
+              >
+                重置
+              </Button>
+            )}
           </div>
-          <Button 
-            className='rounded-xs'
-            type="default" 
-            icon={<PlusOutlined />}
-            onClick={handleAdd}
-          >
-            開單
-          </Button>
         </div>
         {/* title */}
         <div className='my-sm useBetween'>
@@ -828,12 +863,23 @@ const Transactions = () => {
             <span className='text-subtitle font-bold font-serif ml-base'>交易記錄</span>
             <span className='text-body2 font-bold font-serif ml-base'>本日剩餘紀錄次數 43 / 50</span>
           </div>
-          <Pagination
-            size='small'
-            className='rounded-xs ml-sm'
-            {...pagination}
-            onChange={handlePagination}
-          />
+          <div class="useStart gap-sm">
+            <Button 
+              type="primary"
+              className='rounded-sm px-md'
+              icon={<PlusOutlined />}
+              onClick={handleAdd}
+              size="middle"
+            >
+              開單
+            </Button>
+            <Pagination
+              size='small'
+              className='rounded-xs ml-sm'
+              {...pagination}
+              onChange={handlePagination}
+            />
+          </div>
         </div>
         {/* table */}
         <PerfectScrollbar className='container bg-white rounded-sm'>
@@ -843,7 +889,8 @@ const Transactions = () => {
             dataSource={displayData}
             loading={tradesLoading}
             sticky={true}
-            tableLayout='fixed'
+            tableLayout='auto'
+            scroll={{ x: 'max-content' }}
             expandable={{
               expandedRowRender,
               expandedRowKeys,
@@ -852,28 +899,42 @@ const Transactions = () => {
               showExpandColumn: false,
             }}
             pagination={false}
-            // pagination={{
-            //   ...pagination,
-            //   onChange: (page, pageSize) => {
-            //     setPagination(prev => ({
-            //       ...prev,
-            //       current: page,
-            //       pageSize: pageSize
-            //     }))
-            //   },
-            //   onShowSizeChange: (current, size) => {
-            //     setPagination(prev => ({
-            //       ...prev,
-            //       current: 1,
-            //       pageSize: size
-            //     }))
-            //   }
-            // }}
-            // scroll={{ x: 800, y: '100%'}}
             />
         </PerfectScrollbar>
         {/* statistic */}
-        <div className='Transactions-statistic bg-white mt-xs rounded-xs'>123</div>
+        <div className='Transactions-statistic useStart bg-white mt-sm px-md rounded-xs'>
+          <Statistic 
+            title="總交易數" 
+            value={pagination.total || 0}
+            className="useBaseline gap-sm flex-1"
+          />
+          <Statistic 
+            title="持倉中" 
+            value={displayData.filter(d => d.status === 'open').length}
+            valueStyle={{ color: '#faad14' }}
+            className="useBaseline gap-sm flex-1"
+          />
+          <Statistic 
+            title="總盈虧" 
+            value={displayData.reduce((sum, d) => sum + (d.profitLoss || 0), 0)}
+            precision={0}
+            valueStyle={{ 
+              color: displayData.reduce((sum, d) => sum + (d.profitLoss || 0), 0) > 0 ? '#52c41a' : '#ff4d4f'
+            }}
+            className="useBaseline gap-sm flex-1"
+          />
+          <Statistic 
+            title="勝率" 
+            value={(() => {
+              const completed = displayData.filter(d => d.status === 'completed')
+              const win = completed.filter(d => (d.profitLoss || 0) > 0).length
+              return completed.length > 0 ? ((win / completed.length) * 100).toFixed(1) : 0
+            })()}
+            suffix="%"
+            valueStyle={{ color: '#1890ff' }}
+            className="useBaseline gap-sm flex-1"
+          />
+        </div>
 
         <TradeDrawer
           visible={drawerVisible}

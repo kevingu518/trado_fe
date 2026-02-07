@@ -516,6 +516,16 @@
   justify-content: space-between;
   align-items: flex-end;
 }
+.useEvenly{
+  display: flex;
+  justify-content:space-evenly;
+  align-items: center;
+}
+.useAround{
+  display: flex;
+  justify-content:space-around;
+  align-items: flex-start;
+}
 
 /*--------------------- 文字大小 ---------------------*/
 @each $size, $value in (

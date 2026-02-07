@@ -5,7 +5,7 @@
     }
   }
   .container{
-    height: calc(100% - 98px);
+    height: calc(100% - 124px);
     // overflow: visible !important;
     // border: 1px solid blue;
     .ant-table-wrapper{
@@ -29,6 +29,23 @@
   //   z-index: 9999;
   // }
   .expandedRow{
+    // 展開動畫效果 - 俐落穩定的高度展開
+    animation: expandRowSlideDown 1.2s ease-out;
+    overflow: hidden;
+    
+    @keyframes expandRowSlideDown {
+      from {
+        max-height: 0;
+        // padding-top: 0;
+        // padding-bottom: 0;
+      }
+      to {
+        max-height: 2000px; // 足夠大的值以容納內容
+        // padding-top: 16px;
+        // padding-bottom: 16px;
+      }
+    }
+
     .expandedRow_fills{
       .ant-card-body{
         padding: 8px 4px !important;
@@ -50,9 +67,24 @@
     }
   }
 
+  // Ant Design Table 展開行的容器動畫
+  .ant-table-expanded-row {
+    animation: expandRowContainer 1.2s ease-out;
+    overflow: hidden;
+    
+    @keyframes expandRowContainer {
+      from {
+        max-height: 0;
+      }
+      to {
+        max-height: 2000px;
+      }
+    }
+  }
+
   &-statistic{
     border-top: 1px solid #eee;
-    height: 24px;
+    height: 40px;
     border-radius: 0px 0px 4px 4px;
     background-color: #fff !important;
     z-index: 9999;

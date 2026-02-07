@@ -126,13 +126,13 @@ export const tradeDTO = {
   toFrontendList(apiData) {
     if (!apiData) return []
 
-    // 如果 API 返回 { list, total, page, pageSize } 格式
+    // 如果 API 返回 { list, total, page, limit } 格式
     if (apiData.list && Array.isArray(apiData.list)) {
       return {
         list: apiData.list.map(item => this.toFrontend(item)),
         total: apiData.total || 0,
         page: apiData.page || 1,
-        pageSize: apiData.pageSize || 10,
+        pageSize: apiData.limit || apiData.pageSize || 10, // 後端使用 limit，前端使用 pageSize
       }
     }
 

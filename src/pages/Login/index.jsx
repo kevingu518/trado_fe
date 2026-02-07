@@ -32,11 +32,33 @@ const Login = () => {
         return;
       }
 
+      console.log('登入響應:', response);
+
       // 後端回傳的格式建議跟一般 login 一樣 { accessToken, user }
-      sessionStorage.setItem('access_token', response.accessToken);
-      dispatch(loginSuccess({ user: response.user }));
+      // 注意：經過 request.js 攔截器處理後，response 已經是 response.data.data
+      const accessToken = response.accessToken || response.access_token || response.token;
+      const user = response.user;
+
+      if (!accessToken) {
+        console.error('登入響應中沒有 accessToken:', response);
+        message.error('登入失敗：無法取得 access token');
+        return;
+      }
+
+      if (!user) {
+        console.error('登入響應中沒有 user:', response);
+        message.error('登入失敗：無法取得使用者資料');
+        return;
+      }
+
+      sessionStorage.setItem('access_token', accessToken);
+      dispatch(loginSuccess({ user }));
       message.success('Google 登入成功！');
-      navigate('/trades');
+      
+      // 稍微延遲一下，確保 token 已經設置
+      setTimeout(() => {
+        navigate('/trades');
+      }, 100);
     } catch (err) {
       console.error(err);
       message.error('Google 登入異常');

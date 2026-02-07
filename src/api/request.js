@@ -14,8 +14,8 @@ const request = axios.create({
 // 請求攔截器
 request.interceptors.request.use(
   (config) => {
-    // const accessToken = sessionStorage.getItem('access_token') || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJmMWRjY2Q3ZC0zNzM2LTRjNTUtYmMyNS03ZmVkMjQ2Yjg3NjciLCJlbWFpbCI6InRlc3QxQGV4YW1wbGUuY29tIiwiaWF0IjoxNzY4OTIxMzgwLCJleHAiOjE3Njk1MjYxODB9.C7Z2Tb3iIqrqDu4Rtzut7DRDlSCq4OCWuaWScqPlfhY';
-    const accessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJiNmE3ZGZmMi01YmYyLTQ3NGQtODQxOC0yNjNjOGMyZmY3MmYiLCJlbWFpbCI6InRlc3QxQGV4YW1wbGUuY29tIiwiaWF0IjoxNzY5NTI4NDYzLCJleHAiOjE3NzAxMzMyNjN9.GuagNSZWra2QhQcrreBQCNzWhexoiWX5IdBoREBRi8k';
+    // 從 sessionStorage 讀取 access token
+    const accessToken = sessionStorage.getItem('access_token');
     if (accessToken) {
       config.headers.Authorization = `Bearer ${accessToken}`;
     }
@@ -42,6 +42,15 @@ request.interceptors.response.use(
     if (status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
+      // 如果當前在登入頁面，不要嘗試刷新 token，直接跳轉
+      if (window.location.pathname === '/auth/login' || window.location.pathname === '/login') {
+        sessionStorage.removeItem('access_token');
+        return Promise.reject({
+          status: 401,
+          msg: '未授權，請先登入',
+        });
+      }
+
       try {
         // 假設 Refresh Token 由後端從 HTTP-Only Cookie 自動處理
         const { data } = await axios.post(
@@ -62,7 +71,10 @@ request.interceptors.response.use(
         // 清除 Access Token
         sessionStorage.removeItem('access_token');
         // Refresh Token 由後端管理，無需前端清除 Cookie
-        window.location.href = '/login';
+        // 只有在非登入頁面時才跳轉，避免循環重定向
+        if (window.location.pathname !== '/auth/login' && window.location.pathname !== '/login') {
+          window.location.href = '/auth/login';
+        }
         return Promise.reject({
           status: refreshError.response?.data?.status || 401,
           msg: refreshError.response?.data?.msg || 'Failed to refresh token',
