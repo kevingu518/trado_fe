@@ -9,15 +9,12 @@ import { formatDate } from '@/utils/dateHelper'
 
 /**
  * 轉換方向：API 格式 → 前端格式
- * @param {string} direction API 的 direction ("buy" | "sell")
+ * @param {string} direction API 的 direction ("long" | "short")
  * @returns {string} 前端的 direction ("long" | "short")
  */
 const convertDirection = (direction) => {
-  const directionMap = {
-    buy: 'long',
-    sell: 'short',
-  }
-  return directionMap[direction] || direction
+  // 後端已改為使用 long/short，直接返回，不需要轉換
+  return direction
 }
 
 /**
@@ -155,11 +152,6 @@ export const tradeDTO = {
   toAPI(frontendTrade) {
     if (!frontendTrade) return null
 
-    const directionMap = {
-      long: 'buy',
-      short: 'sell',
-    }
-
     const statusMap = {
       open: 'open',
       completed: 'closed',
@@ -173,9 +165,8 @@ export const tradeDTO = {
       no: 'no',
     }
 
-    // 智能識別：如果 direction 已經是 'buy' 或 'sell'，表示已經是 API 格式
-    // 或者如果 direction 是 'long' 或 'short'，需要轉換為 'buy' 或 'sell'
-    const isDirectionAPIFormat = frontendTrade.direction === 'buy' || frontendTrade.direction === 'sell'
+    // 後端已改為使用 long/short，直接使用，不需要轉換
+    const isDirectionAPIFormat = frontendTrade.direction === 'long' || frontendTrade.direction === 'short'
     const isStatusAPIFormat = frontendTrade.status === 'open' || frontendTrade.status === 'closed'
     const isDisciplineAPIFormat = frontendTrade.followedDiscipline === 'yes' || frontendTrade.followedDiscipline === 'no' || 
                                   frontendTrade.followedDiscipline === true || frontendTrade.followedDiscipline === false ||
@@ -197,9 +188,7 @@ export const tradeDTO = {
 
     return {
       symbol: frontendTrade.symbol,
-      direction: isDirectionAPIFormat 
-        ? frontendTrade.direction 
-        : (directionMap[frontendTrade.direction] || frontendTrade.direction),
+      direction: frontendTrade.direction, // 後端已改為使用 long/short，直接使用
       status: isStatusAPIFormat 
         ? frontendTrade.status 
         : (statusMap[frontendTrade.status] || frontendTrade.status),
