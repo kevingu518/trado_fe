@@ -26,8 +26,16 @@
 }
 
 /*--------------------- 字體系統 ---------------------*/
-$font-family: 'Noto Sans TC', sans-serif;
-$font-family-serif: 'Noto Serif TC', serif;
+// $font-family: 'Noto Sans TC', sans-serif;
+// $font-family-serif: 'Noto Serif TC', serif;
+// $font-family: 'Roboto', sans-serif;
+// $font-family-serif: 'Roboto Slab', serif;
+// $font-family: 'Noto Sans TC', sans-serif;
+// $font-family-serif: 'Noto Serif TC', serif;
+// $font-family: 'Roboto', sans-serif;
+// $font-family-serif: 'Roboto Slab', serif;
+$font-family: 'PingFang TC', sans-serif;
+$font-family-serif: 'PingFang TC', serif;
 $font-size-base: 16px;
 $font-size-xs: 12px;
 $font-size-sm: 14px;
@@ -70,7 +78,7 @@ $shadow-warning: 0 4px 14px rgba(250, 173, 20, 0.3);
 $shadow-error: 0 4px 14px rgba(255, 77, 79, 0.3);
 /*--------------------- 斷點系統 ---------------------*/
 /*--------------------- 雜項 ---------------------*/
-$sidebar-width: 60px;
+$sidebar-width: 48px;
 $header-height: 64px;
 $footer-height: 64px;
 

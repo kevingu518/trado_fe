@@ -373,6 +373,7 @@ const TradeDrawer = ({
         header: 'py-base px-md',
         body: 'p-md',
       }}
+      getContainer={false}
       extra={
         <Space>
           <Button className="rounded-sm" onClick={onClose}>

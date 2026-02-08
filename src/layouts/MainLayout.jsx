@@ -89,6 +89,7 @@ const MainLayout = () => {
         type="primary" 
         color="default" 
         variant="text" 
+        className='p-none'
         style={{ height: '40px' }}
       >
         {picture ? (
@@ -102,7 +103,7 @@ const MainLayout = () => {
   return (
     <div className={`MainLayout`}>
       {/* 側邊欄 */}
-      <section className='MainLayout-sider shadow-md shadow-sm'>
+      <section className='MainLayout-sider pa-xs'>
         {/* 主要選單 */}
         <Menu
           mode="inline"
@@ -119,7 +120,7 @@ const MainLayout = () => {
         
       </section>
       {/* 主要內容區 */}
-      <section className='MainLayout-content bg-grey-100'>
+      <section className='MainLayout-content'>
         <Outlet />
       </section>
     </div>

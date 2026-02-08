@@ -1,44 +1,48 @@
 .Transactions{
-  &-header{
-    .ant-select-selector{
-      border-radius: 2px !important;
+  // 只保留必要的樣式，顏色交給 Ant Design ConfigProvider 處理
+  .ant-select-selector{
+    border-radius: 4px !important;
+    background: rgba(255, 255, 255, 0.9) !important;
+  }
+  
+  .ant-picker {
+    border-radius: 4px !important;
+    background: rgba(255, 255, 255, 0.9) !important;
+  }
+  
+  // 有值時的視覺提示（使用 Ant Design 的主色半透明）
+  .ant-select.has-value .ant-select-selector,
+  .ant-picker.has-value .ant-picker-input {
+    border-color: rgba(42, 82, 152, 0.5) !important; // 使用 login 頁面主色的半透明
+  }
+  
+  // 重置按鈕樣式（只保留必要的樣式，顏色交給 Ant Design）
+  .reset-filter-btn {
+    border-radius: 4px !important;
+    background: rgba(255, 255, 255, 0.9);
+    transition: all 0.2s;
+    
+    &:hover {
+      background: rgba(255, 255, 255, 1);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(42, 82, 152, 0.15);
     }
     
-    // 有值時稍微深一點的邊框
-    .ant-select.has-value .ant-select-selector,
-    .ant-picker.has-value .ant-picker-input {
-      border-color: #8c8c8c !important; // 有值時稍微深一點（原本是 #d9d9d9）
+    &:active {
+      background: rgba(255, 255, 255, 0.95);
     }
     
-    // 重置按鈕樣式（與 filter 風格一致）
-    .reset-filter-btn {
-      border: 1px solid #d9d9d9 !important;
-      border-radius: 2px !important;
-      color: #595959;
-      background: #fff;
-      transition: all 0.2s;
-      
-      &:hover {
-        border-color: #40a9ff !important; // 與 Ant Design 輸入框 hover 顏色一致
-        color: #262626;
-        background: #fafafa;
-      }
-      
-      &:active {
-        border-color: #1890ff !important; // 與 Ant Design 輸入框 focus 顏色一致
-        background: #f5f5f5;
-      }
-      
-      .anticon {
-        font-size: 12px;
-        margin-right: 4px;
-      }
+    .anticon {
+      font-size: 12px;
+      margin-right: 4px;
     }
   }
+  
   .container{
-    height: calc(100% - 124px);
+    height: calc(100% - 120px);
     // overflow: visible !important;
     // border: 1px solid blue;
+    border-radius: 4px 4px 0px 0px;
     .ant-table-wrapper{
       border-radius: 0px 0px 4px 4px;
     }
@@ -114,9 +118,9 @@
   }
 
   &-statistic{
-    border-top: 1px solid #eee;
+    border-top: 2px solid #eee;
     height: 40px;
-    border-radius: 0px 0px 4px 4px;
+    border-radius: 0px 0px 8px 8px;
     background-color: #fff !important;
     z-index: 9999;
     // color: #fff !important;

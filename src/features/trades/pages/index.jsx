@@ -823,21 +823,37 @@ const Transactions = () => {
   ]
 
   return (
-    <div className='h-full w-full p-base Transactions overflow-hidden'>
-      <div className="card h-full">
-        {/* header */}
-        <div className='Transactions-header useBetween bg-white p-sm rounded-sm shadow-xs'>
+    <div className='h-full w-full Transactions overflow-hidden'>
+      <div className="card h-full overflow-hidden" style={{ position: 'relative', padding: '12px' }}>
+        {/* title */}
+        <div className="useBetween">
+          <div>
+            <span className='text-title font-bold font-serif'>交易記錄</span>
+            <span className='text-body2 font-bold font-serif ml-base'>本日剩餘紀錄次數 43 / 50</span>
+          </div>
+          <Button 
+            type="primary"
+            className='rounded-sm px-lg'
+            icon={<PlusOutlined />}
+            onClick={handleAdd}
+            size="middle"
+            >
+            開單
+          </Button>
+        </div>
+        {/* filter */}
+        <div className='useBetween my-sm py-sm'>
           <div className="useStart gap-sm">
             <RangePicker
               placeholder={['開始時間', '結束時間']}
-              className={`rounded-xs ${dateRange ? 'has-value' : ''}`}
+              className={`rounded-sm ${dateRange ? 'has-value' : ''}`}
               value={dateRange}
               onChange={setDateRange}
               format="YYYY-MM-DD"
               style={{ width: 240 }}
             />
             <Select
-              className={`rounded-xs ${symbolFilter ? 'has-value' : ''}`}
+              className={`rounded-lg ${symbolFilter ? 'has-value' : ''}`}
               value={symbolFilter}
               onChange={setSymbolFilter}
               placeholder="股票號碼"
@@ -849,7 +865,7 @@ const Transactions = () => {
               ))}
             </Select>
             <Select
-              className={`rounded-xs ${strategyFilter ? 'has-value' : ''}`}
+              className={`rounded-sm ${strategyFilter ? 'has-value' : ''}`}
               value={strategyFilter}
               onChange={setStrategyFilter}
               placeholder="策略"
@@ -861,7 +877,7 @@ const Transactions = () => {
               ))}
             </Select>
             <Select
-              className={`rounded-xs ${directionFilter ? 'has-value' : ''}`}
+              className={`rounded-sm ${directionFilter ? 'has-value' : ''}`}
               value={directionFilter}
               onChange={setDirectionFilter}
               placeholder="多空"
@@ -872,7 +888,7 @@ const Transactions = () => {
               <Option value="short">空</Option>
             </Select>
             <Select
-              className={`rounded-xs ${statusFilter !== 'all' ? 'has-value' : ''}`}
+              className={`rounded-sm ${statusFilter !== 'all' ? 'has-value' : ''}`}
               value={statusFilter}
               onChange={setStatusFilter}
               placeholder="交易狀態"
@@ -886,7 +902,7 @@ const Transactions = () => {
             {(dateRange || symbolFilter || strategyFilter || directionFilter || statusFilter !== 'all') && (
               <Button 
                 size="small"
-                className='rounded-xs reset-filter-btn'
+                className='rounded-sm reset-filter-btn'
                 icon={<ClearOutlined />}
                 onClick={() => {
                   setDateRange(null)
@@ -906,23 +922,7 @@ const Transactions = () => {
               </Button>
             )}
           </div>
-        </div>
-        {/* title */}
-        <div className='my-sm useBetween'>
-          <div>
-            <span className='text-subtitle font-bold font-serif ml-base'>交易記錄</span>
-            <span className='text-body2 font-bold font-serif ml-base'>本日剩餘紀錄次數 43 / 50</span>
-          </div>
           <div class="useStart gap-sm">
-            <Button 
-              type="primary"
-              className='rounded-sm px-md'
-              icon={<PlusOutlined />}
-              onClick={handleAdd}
-              size="middle"
-            >
-              開單
-            </Button>
             <Pagination
               size='small'
               className='rounded-xs ml-sm'
@@ -932,7 +932,7 @@ const Transactions = () => {
           </div>
         </div>
         {/* table */}
-        <PerfectScrollbar className='container bg-white rounded-sm'>
+        <PerfectScrollbar className='container bg-white'>
             <Table
             size='small'
             columns={columns}
@@ -952,7 +952,7 @@ const Transactions = () => {
             />
         </PerfectScrollbar>
         {/* statistic */}
-        <div className='Transactions-statistic useStart bg-white mt-sm px-md rounded-xs'>
+        <div className='Transactions-statistic useStart bg-white px-md'>
           <Statistic 
             title="總交易數" 
             value={pagination.total || 0}
@@ -995,6 +995,7 @@ const Transactions = () => {
           onEditPosition={handleEditPosition}
           onDeletePosition={handleDeletePosition}
           onPositionAddedRef={onPositionAddedRef}
+          getContainer={false}
         />
 
         <AddPositionModal
@@ -1012,7 +1013,7 @@ const Transactions = () => {
           initialData={editingTrade || null}
         />
       </div>
-  </div>
+    </div>
   )
 }
 
