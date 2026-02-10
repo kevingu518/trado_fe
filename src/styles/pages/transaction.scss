@@ -40,6 +40,7 @@
   
   .container{
     height: calc(100% - 120px);
+    border: 1px solid var(--border-color);
     // overflow: visible !important;
     // border: 1px solid blue;
     border-radius: 4px 4px 0px 0px;
@@ -52,17 +53,10 @@
       }
       .ant-table-cell{
         // background-color: #f5f5f5;
-        border-bottom: 1px solid #eee;
+        border-bottom: 1px solid var(--border-color);
       }
     }
   }
-  // .ant-pagination{
-  //   position: absolute;
-  //   top: -40px;
-  //   margin: 8px 0px !important;
-  //   right: 0px;
-  //   z-index: 9999;
-  // }
   .expandedRow{
     // 展開動畫效果 - 俐落穩定的高度展開
     animation: expandRowSlideDown 1.2s ease-out;
@@ -118,11 +112,12 @@
   }
 
   &-statistic{
-    border-top: 2px solid #eee;
+    border: 1px solid var(--border-color);
+    border-top: none;
     height: 40px;
     border-radius: 0px 0px 8px 8px;
     background-color: #fff !important;
-    z-index: 9999;
+    // z-index: 9999;
     // color: #fff !important;
   }
 
@@ -160,4 +155,29 @@
   .stamp-pending {
     background: linear-gradient(135deg, #faad14, #ffc53d);
   }
+}
+
+// 操作欄位 hover 效果：只有滑過該列時才凸顯「操作」按鈕
+.Transactions {
+  .Transactions-operation-cell {
+    .Transactions-operation-button {
+      // opacity: 0.4;
+      border-radius: 4px;
+      &:hover{
+        background-color: rgba(171, 171, 171, 0.1);
+        color: #0059ab;
+      }
+    }
+  }
+
+  // .ant-table-tbody > tr:hover .Transactions-operation-cell .Transactions-operation-button {
+  //   opacity: 1;
+  // }
+
+
+  
+}
+
+.ant-dropdown-menu{
+  border-radius: 8px !important;
 }

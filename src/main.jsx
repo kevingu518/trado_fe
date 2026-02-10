@@ -2,39 +2,50 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { ConfigProvider } from 'antd';
 import { GoogleOAuthProvider } from '@react-oauth/google';
-// import './index.css'
+import { ThemeProvider, useTheme } from './contexts/ThemeContext'
 import './styles/index.scss'
 import App from './App.jsx'
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
+
+// 將顏色轉換為 rgba 格式的輔助函數
+const hexToRgba = (hex, alpha = 1) => {
+  const r = parseInt(hex.slice(1, 3), 16)
+  const g = parseInt(hex.slice(3, 5), 16)
+  const b = parseInt(hex.slice(5, 7), 16)
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`
+}
+
+// 內部組件，使用主題
+const ThemedApp = () => {
+  const { theme } = useTheme()
+  
+  return (
     <ConfigProvider
       theme={{
         token: {
-          // 主要顏色（使用 login 頁面的藍色漸層主色）
-          // login 頁面漸層：linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e8ba3 100%)
-          colorPrimary: '#2a5298', // login 頁面的主藍色（漸層中間色）
-          colorPrimaryHover: '#1e3c72', // hover 時使用漸層起始色（更深）
-          colorPrimaryActive: '#1e3c72', // active 時使用漸層起始色
-          colorPrimaryBg: 'rgba(42, 82, 152, 0.1)', // 主要顏色背景
-          colorPrimaryBgHover: 'rgba(30, 60, 114, 0.15)',
-          colorPrimaryBorder: 'rgba(42, 82, 152, 0.3)',
-          colorPrimaryBorderHover: 'rgba(30, 60, 114, 0.5)',
+          // 主要顏色（使用動態主題）
+          colorPrimary: theme.primary,
+          colorPrimaryHover: theme.primaryDark,
+          colorPrimaryActive: theme.primaryDark,
+          colorPrimaryBg: hexToRgba(theme.primary, 0.1),
+          colorPrimaryBgHover: hexToRgba(theme.primary, 0.15),
+          colorPrimaryBorder: hexToRgba(theme.primary, 0.3),
+          colorPrimaryBorderHover: hexToRgba(theme.primaryDark, 0.5),
           
           // 其他狀態顏色
           colorSuccess: '#52c41a',
           colorWarning: '#faad14',
           colorError: '#ff4d4f',
-          colorInfo: '#2a5298', // 使用主色調
+          colorInfo: theme.primary, // 使用主色調
           
-          // 邊框顏色（與 login 頁面風格一致）
-          colorBorder: 'rgba(30, 60, 114, 0.2)', // 使用漸層起始色的半透明
-          colorBorderSecondary: 'rgba(30, 60, 114, 0.1)',
+          // 邊框顏色（使用主題色）
+          colorBorder: hexToRgba(theme.primaryDark, 0.2),
+          colorBorderSecondary: hexToRgba(theme.primaryDark, 0.1),
           
           // 背景顏色
           colorBgContainer: '#ffffff',
-          colorBgElevated: 'rgba(255, 255, 255, 0.95)',
+          // colorBgElevated: 'rgba(255, 255, 255, 0.95)',
           colorBgLayout: '#f5f5f5',
           
           // 文字顏色
@@ -55,32 +66,32 @@ createRoot(document.getElementById('root')).render(
         components: {
           Button: {
             borderRadius: 8,
-            primaryShadow: '0 4px 12px rgba(30, 60, 114, 0.3)',
+            primaryShadow: `0 4px 12px ${hexToRgba(theme.primaryDark, 0.3)}`,
             defaultShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
           },
           Input: {
             borderRadius: 8,
-            activeBorderColor: '#2a5298', // 使用主色
-            hoverBorderColor: '#1e3c72', // hover 時使用漸層起始色
+            activeBorderColor: theme.primary,
+            hoverBorderColor: theme.primaryDark,
           },
           Select: {
             borderRadius: 8,
-            optionSelectedBg: 'rgba(42, 82, 152, 0.1)',
-            optionActiveBg: 'rgba(42, 82, 152, 0.15)', // hover 時使用主色（較淺）
-            optionSelectedColor: '#2a5298',
-            activeBorderColor: '#2a5298',
-            hoverBorderColor: '#2a5298', // hover 時使用主色（較淺）
+            optionSelectedBg: hexToRgba(theme.primary, 0.1),
+            optionActiveBg: hexToRgba(theme.primary, 0.15),
+            optionSelectedColor: theme.primary,
+            activeBorderColor: theme.primary,
+            hoverBorderColor: theme.primary,
           },
           DatePicker: {
             borderRadius: 8,
-            activeBorderColor: '#2a5298', // 使用主色
-            hoverBorderColor: '#2a5298', // hover 時使用主色（較淺）
+            activeBorderColor: theme.primary,
+            hoverBorderColor: theme.primary,
           },
           Table: {
             borderRadius: 8,
             headerBg: 'rgba(250, 250, 250, 0.9)',
             headerColor: '#1a1a1a',
-            rowHoverBg: 'rgba(42, 82, 152, 0.05)',
+            rowHoverBg: hexToRgba(theme.primary, 0.05),
           },
           Card: {
             borderRadius: 16,
@@ -102,5 +113,13 @@ createRoot(document.getElementById('root')).render(
         <App />
       </GoogleOAuthProvider>
     </ConfigProvider>
+  )
+}
+
+createRoot(document.getElementById('root')).render(
+  <StrictMode>
+    <ThemeProvider>
+      <ThemedApp />
+    </ThemeProvider>
   </StrictMode>,
 )

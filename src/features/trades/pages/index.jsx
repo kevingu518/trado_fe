@@ -6,7 +6,7 @@ import { Table, Tag, Button, Space, message, Card, Row, Col, Switch, Rate, Toolt
 
 const { Option } = Select;
 const { TabPane } = Tabs;
-import { EditOutlined, EyeOutlined, PlusOutlined, CheckOutlined, CloseOutlined, MinusOutlined, DownOutlined, FileTextOutlined, ClockCircleOutlined, DollarOutlined, ClearOutlined } from '@ant-design/icons'
+import { EditOutlined, EyeOutlined, PlusOutlined, CheckOutlined, CloseOutlined, MinusOutlined, FileTextOutlined, ClockCircleOutlined, DollarOutlined, ClearOutlined } from '@ant-design/icons'
 import PerfectScrollbar from 'react-perfect-scrollbar'
 import 'react-perfect-scrollbar/dist/css/styles.css';
 import { to } from 'await-to-js'
@@ -787,7 +787,10 @@ const Transactions = () => {
       align: 'center',
       fixed: 'right',
       render: (_, record) => (
-        <div onClick={(e) => e.stopPropagation()}>
+        <div 
+          className="Transactions-operation-cell"
+          onClick={(e) => e.stopPropagation()}
+        >
           <Dropdown
             menu={{
               items: [
@@ -811,10 +814,15 @@ const Transactions = () => {
                 },
               ],
             }}
-            trigger={['click']}
+            trigger={['hover']}
           >
-            <Button type="link" size="small" onClick={(e) => e.stopPropagation()}>
-              操作 <DownOutlined />
+            <Button 
+              type="link" 
+              size="small" 
+              onClick={(e) => e.stopPropagation()}
+              className="Transactions-operation-button"
+            >
+              操作
             </Button>
           </Dropdown>
         </div>
@@ -824,7 +832,7 @@ const Transactions = () => {
 
   return (
     <div className='h-full w-full Transactions overflow-hidden'>
-      <div className="card h-full overflow-hidden" style={{ position: 'relative', padding: '12px' }}>
+      <div className="card h-full px-md overflow-hidden" style={{ position: 'relative', padding: '12px' }}>
         {/* title */}
         <div className="useBetween">
           <div>

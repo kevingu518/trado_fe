@@ -9,8 +9,7 @@
   gap: 12px;
   overflow: hidden; // 防止偽元素溢出影響布局
   
-  // 背景漸層（與 login 頁面的 auth-background-gradient 一致）
-  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e8ba3 100%);
+  // 背景漸層會透過 inline style 動態設定
   opacity: 0.9;
   
   // 動畫點效果 - 第一層（與 login 頁面的 auth-background-gradient::before 一致）
@@ -184,7 +183,9 @@
     // background-color: rgba(227, 226, 226, 0.905);
     // border: 1px solid white;
     // 半透明白色 + 毛玻璃
-    background: rgba(255, 255, 255, 0.874);
+    // background: rgba(255, 255, 255, 0.874);
+    // background: #f6f7f9;
+    background: #f5f5f5;
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(10px);
     

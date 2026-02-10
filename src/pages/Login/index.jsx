@@ -8,12 +8,14 @@ import { userAPI } from '@/api/api_user';
 import { loginSuccess } from '@/store/authSlice';
 import { FcGoogle } from 'react-icons/fc';
 import { BarChartOutlined } from '@ant-design/icons';
+import { useTheme } from '@/contexts/ThemeContext';
 
 const { Title, Text } = Typography;
 
 const Login = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { theme } = useTheme();
 
   // Google 登入成功後處理
   const handleGoogleSuccess = async (credentialResponse) => {
@@ -73,7 +75,12 @@ const Login = () => {
     <div className="auth-container">
       {/* 背景裝飾 */}
       <div className="auth-background">
-        <div className="auth-background-gradient"></div>
+        <div 
+          className="auth-background-gradient"
+          style={{
+            background: theme.gradient, // 動態設定漸層背景
+          }}
+        ></div>
         <div className="auth-background-pattern"></div>
       </div>
 
@@ -82,10 +89,24 @@ const Login = () => {
         <Card className="login-card">
           {/* Logo 區域 */}
           <div className="auth-logo-section">
-            <div className="auth-logo-icon">
+            <div 
+              className="auth-logo-icon"
+              style={{
+                background: theme.gradient, // 動態設定漸層背景
+              }}
+            >
               <BarChartOutlined />
             </div>
-            <Title level={1} className="auth-brand-title">
+            <Title 
+              level={1} 
+              className="auth-brand-title"
+              style={{
+                background: theme.gradient, // 動態設定漸層背景
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+              }}
+            >
               Trado
             </Title>
             <Text className="auth-brand-subtitle">

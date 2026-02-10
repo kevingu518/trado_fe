@@ -14,6 +14,8 @@ import { useDispatch } from 'react-redux';
 import { message } from 'antd';
 import { to } from 'await-to-js';
 import { useUserInfo } from '../hooks/useUserInfo';
+import { useTheme } from '../contexts/ThemeContext';
+import ThemeSwitcher from '../components/ThemeSwitcher';
 
 const items = [
   {
@@ -41,6 +43,9 @@ const MainLayout = () => {
 
   // 從 Redux store 取得使用者資訊
   const { email, name, picture } = useUserInfo();
+  
+  // 從 ThemeContext 取得主題
+  const { theme } = useTheme();
 
   // dispatch(sliceLogout());
   // 處理選單選擇
@@ -101,7 +106,12 @@ const MainLayout = () => {
     </Popover>
   )
   return (
-    <div className={`MainLayout`}>
+    <div 
+      className={`MainLayout`}
+      style={{
+        background: theme.gradient, // 動態設定漸層背景
+      }}
+    >
       {/* 側邊欄 */}
       <section className='MainLayout-sider pa-xs'>
         {/* 主要選單 */}
@@ -115,9 +125,10 @@ const MainLayout = () => {
         />
         
         {/* 底部選單 */}
-        { userMenuContent() }
-
-        
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+          <ThemeSwitcher />
+          { userMenuContent() }
+        </div>
       </section>
       {/* 主要內容區 */}
       <section className='MainLayout-content'>
