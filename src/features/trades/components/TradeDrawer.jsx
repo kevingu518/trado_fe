@@ -436,16 +436,24 @@ const TradeDrawer = ({
                       {tradeData.direction === 'long' ? '多' : '空'}
                     </Tag>
                   </Descriptions.Item>
-                  <Descriptions.Item label="開倉日">
-                    {tradeData.createdAt || '-'}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="清倉日">
-                    {tradeData.closedAt || '-'}
+                  <Descriptions.Item label="策略">
+                    {tradeData.strategy || '-'}
                   </Descriptions.Item>
                   <Descriptions.Item label="狀態">
                     <Tag color={tradeData.status === 'open' ? 'orange' : 'default'}>
                       {tradeData.status === 'open' ? '持倉中' : '已完成'}
                     </Tag>
+                  </Descriptions.Item>
+                  <Descriptions.Item label="持倉日">
+                    {(() => {
+                      const start = tradeData.createdAt
+                        ? dayjs(tradeData.createdAt).format('YYYY/MM/DD')
+                        : '-'
+                      const end = tradeData.closedAt
+                        ? dayjs(tradeData.closedAt).format('YYYY/MM/DD')
+                        : ''
+                      return `${start} ~ ${end}`
+                    })()}
                   </Descriptions.Item>
                 </Descriptions>
               </Card>
@@ -458,17 +466,19 @@ const TradeDrawer = ({
                   <Descriptions.Item label="總數量">
                     {tradeData.totalShares?.toLocaleString() || 0}
                   </Descriptions.Item>
+                  <Descriptions.Item label="建倉次數">
+                    {tradeData.entryCount ?? positionAdjustments.length ?? 0}
+                  </Descriptions.Item>
                   <Descriptions.Item label="平均價格">
                     ${tradeData.avgPrice ? parseFloat(tradeData.avgPrice).toFixed(2) : '0.00'}
                   </Descriptions.Item>
                   <Descriptions.Item label="總價值">
                     ${tradeData.totalValue ? parseFloat(tradeData.totalValue).toFixed(2) : '0.00'}
                   </Descriptions.Item>
-                  <Descriptions.Item label="策略">
-                    {tradeData.strategy || '-'}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="備註">
-                    {tradeData.positionNote || '-'}
+                  <Descriptions.Item label="持倉時間">
+                    {tradeData.holdingDuration
+                      ? `${parseFloat(tradeData.holdingDuration).toFixed(1)} 天`
+                      : '-'}
                   </Descriptions.Item>
                 </Descriptions>
               </Card>
