@@ -161,7 +161,6 @@
 .Transactions {
   .Transactions-operation-cell {
     .Transactions-operation-button {
-      // opacity: 0.4;
       border-radius: 4px;
       &:hover{
         background-color: rgba(171, 171, 171, 0.1);
@@ -169,15 +168,27 @@
       }
     }
   }
-
-  // .ant-table-tbody > tr:hover .Transactions-operation-cell .Transactions-operation-button {
-  //   opacity: 1;
-  // }
-
-
-  
 }
 
 .ant-dropdown-menu{
   border-radius: 8px !important;
+}
+
+// TradeDrawer 刪除按鈕樣式（header 右上角）
+.TradeDrawer {
+  .TradeDrawer-delete-btn {
+    border-radius: 4px !important;
+    color: #666666 !important;
+    background-color: transparent !important;
+    transition: all 0.2s ease;
+
+    .anticon {
+      font-size: 14px;
+    }
+
+    &:hover {
+      color: #b91c1c !important; // 稍暗一點的紅色
+      background-color: rgba(185, 28, 28, 0.08) !important;
+    }
+  }
 }

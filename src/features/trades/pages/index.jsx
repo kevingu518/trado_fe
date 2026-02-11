@@ -410,6 +410,30 @@ const Transactions = () => {
     }
   }
 
+  // 刪除整筆交易
+  const handleDeleteTrade = async (id) => {
+    const tradeIdToDelete = id || tradeId
+
+    if (!tradeIdToDelete) {
+      message.error('交易 ID 不存在')
+      return
+    }
+
+    const [err] = await to(tradesService.removeTrade(tradeIdToDelete))
+
+    if (err) {
+      message.error(err.msg || err.message || '刪除交易失敗')
+      return
+    }
+
+    message.success('交易已刪除')
+
+    // 關閉 Drawer，清空選取並刷新列表
+    setDrawerVisible(false)
+    setSelectedRecord(null)
+    await refetchTrades()
+  }
+
   // 處理行展開
   const handleExpand = (expanded, record) => {
     if (expanded) {
@@ -1003,6 +1027,7 @@ const Transactions = () => {
           onEditPosition={handleEditPosition}
           onDeletePosition={handleDeletePosition}
           onPositionAddedRef={onPositionAddedRef}
+          onDeleteTrade={handleDeleteTrade}
           getContainer={false}
         />
 

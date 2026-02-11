@@ -83,7 +83,8 @@ const TradeDrawer = ({
   onAddPosition, 
   onEditPosition, 
   onDeletePosition,
-  onPositionAddedRef // 用於存儲刷新函數的 ref
+  onPositionAddedRef, // 用於存儲刷新函數的 ref
+  onDeleteTrade,      // 刪除整筆交易的 callback
 }) => {
   // ------------------ hooks ------------------
   // 使用 useTrade hook 獲取交易詳情
@@ -306,6 +307,12 @@ const TradeDrawer = ({
     }
   }
 
+  // 處理刪除交易
+  const handleDeleteTradeClick = async () => {
+    if (!onDeleteTrade || !tradeId) return
+    await onDeleteTrade(tradeId)
+  }
+
   // 初始化表單資料
   useEffect(() => {
     if (tradeData) {
@@ -369,6 +376,7 @@ const TradeDrawer = ({
       width={1000}
       onClose={onClose}
       open={visible}
+      className="TradeDrawer"
       classNames={{
         header: 'py-base px-md',
         body: 'p-md',
@@ -376,6 +384,23 @@ const TradeDrawer = ({
       getContainer={false}
       extra={
         <Space>
+          <Popconfirm
+            title="刪除交易"
+            description="將刪除此交易及其所有倉位記錄，此操作無法復原，確定要刪除嗎？"
+            okText="刪除"
+            okType="danger"
+            cancelText="取消"
+            onConfirm={handleDeleteTradeClick}
+          >
+            <Button
+              type="text"
+              icon={<DeleteOutlined />}
+              className="TradeDrawer-delete-btn"
+            >
+              刪除
+            </Button>
+          </Popconfirm>
+
           <Button className="rounded-sm" onClick={onClose}>
             取消
           </Button>
