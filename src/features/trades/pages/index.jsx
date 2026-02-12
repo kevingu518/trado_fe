@@ -980,6 +980,16 @@ const Transactions = () => {
               expandRowByClick: true,
               showExpandColumn: false,
             }}
+            onRow={(record) => ({
+              onClick: (e) => {
+                // 如果按了 Ctrl (Windows/Linux) 或 Cmd (Mac)
+                if (e.ctrlKey || e.metaKey) {
+                  e.stopPropagation() // 阻止展開 row
+                  handleView(record) // 打開 drawer
+                }
+                // 如果沒有按 Ctrl，保持原本的展開行為（expandRowByClick 會處理）
+              },
+            })}
             pagination={false}
             />
         </PerfectScrollbar>
