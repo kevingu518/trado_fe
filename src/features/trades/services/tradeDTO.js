@@ -192,6 +192,8 @@ export const tradeDTO = {
       status: isStatusAPIFormat 
         ? frontendTrade.status 
         : (statusMap[frontendTrade.status] || frontendTrade.status),
+      strategyId: frontendTrade.strategyId || frontendTrade.strategy || null, // 策略 ID（優先使用 strategyId，否則使用 strategy）
+      createdAt: frontendTrade.createdAt || null, // 開倉日
       followedDiscipline: followedDisciplineValue,
       // 檢討相關欄位
       reviewNotes: frontendTrade.reviewNotes || frontendTrade.review?.content || null,

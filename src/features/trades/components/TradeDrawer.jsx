@@ -588,7 +588,7 @@ const TradeDrawer = ({
                   layout="vertical"
                   size="small"
                 >
-                  <Row gutter={16} style={{ marginBottom: 16 }}>
+                  <Row gutter={16} >
                     <Col span={12}>
                       <Form.Item
                         label="錯誤分類"
@@ -629,7 +629,7 @@ const TradeDrawer = ({
                     </Col>
                   </Row>
 
-                  <Row gutter={16} style={{ marginBottom: 16 }}>
+                  <Row gutter={16} >
                     <Col span={12}>
                       <Form.Item
                         label="是否遵守紀律"
