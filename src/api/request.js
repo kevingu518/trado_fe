@@ -31,7 +31,12 @@ request.interceptors.response.use(
     // response會有一層 axois 的包裝
     console.log({response});
     console.log('response.data',response.data);
-    return response.data.data;
+    // 如果後端回應包含 pagination，返回完整的 response.data
+    // 否則返回 response.data.data（向後兼容）
+    if (response.data && response.data.pagination !== undefined) {
+      return response.data;
+    }
+    return response.data.data || response.data;
   },
   async (error) => {
     const originalRequest = error.config;

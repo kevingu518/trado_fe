@@ -101,7 +101,7 @@ const AddTradeModal = ({
       className='add-trade-modal'
       width={640}
       footer={[
-        <Button key="cancel" onClick={handleCancel} size="large" style={{ borderRadius: '8px' }}>
+        <Button key="cancel" onClick={handleCancel} size="large" style={{ borderRadius: '4px' }}>
           取消
         </Button>,
         <Button 
@@ -110,7 +110,7 @@ const AddTradeModal = ({
           icon={isEditMode ? <EditOutlined /> : <PlusOutlined />} 
           onClick={handleSave}
           size="large"
-          style={{ borderRadius: '8px' }}
+          style={{ borderRadius: '4px' }}
         >
           {isEditMode ? '保存' : '新增'}
         </Button>

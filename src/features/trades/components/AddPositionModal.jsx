@@ -2,6 +2,7 @@
 import React from 'react'
 import { Modal, Form, Input, Select, DatePicker, InputNumber, Button, Space, message } from 'antd'
 import { PlusOutlined } from '@ant-design/icons'
+import '../styles/AddPositionModal.scss'
 
 const { Option } = Select
 
@@ -64,12 +65,20 @@ const AddPositionModal = ({
       title="新增倉位變動"
       open={visible}
       onCancel={handleCancel}
-      width={700}
+      className='AddPositionModal'
+      width={640}
       footer={[
-        <Button key="cancel" onClick={handleCancel}>
+        <Button key="cancel" onClick={handleCancel} size="large" style={{ borderRadius: '4px' }}>
           取消
         </Button>,
-        <Button key="save" type="primary" icon={<PlusOutlined />} onClick={handleSave}>
+        <Button 
+          key="save" 
+          type="primary" 
+          icon={<PlusOutlined />} 
+          onClick={handleSave}
+          size="large"
+          style={{ borderRadius: '4px' }}
+        >
           新增
         </Button>
       ]}
@@ -77,9 +86,8 @@ const AddPositionModal = ({
       <Form
         form={form}
         layout="vertical"
-        size="small"
       >
-        <div style={{ marginBottom: 16, padding: 12, background: '#f5f5f5', borderRadius: 6 }}>
+        <div style={{ marginBottom: 16, padding: 12, background: '#f5f5f5', borderRadius: '4px' }}>
           <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: 4 }}>
             交易標的：{selectedRecord?.symbol} ({selectedRecord?.direction === 'long' ? '多' : '空'})
           </div>
@@ -88,15 +96,16 @@ const AddPositionModal = ({
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+        <div className='useBetween gap-md'>
           <Form.Item
             label="日期"
             name="date"
+            className='flex-1'
             rules={[{ required: true, message: '請選擇日期' }]}
           >
             <DatePicker 
               placeholder="選擇日期" 
-              style={{ width: '100%' }}
+              style={{ width: '100%', borderRadius: '4px' }}
               format="YYYY-MM-DD"
             />
           </Form.Item>
@@ -104,9 +113,13 @@ const AddPositionModal = ({
           <Form.Item
             label="動作"
             name="action"
+            className='flex-1'
             rules={[{ required: true, message: '請選擇動作' }]}
           >
-            <Select placeholder="請選擇動作">
+            <Select 
+              placeholder="請選擇動作"
+              style={{ borderRadius: '4px' }}
+            >
               {positionActions.map(action => (
                 <Option key={action.value} value={action.value}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -126,10 +139,11 @@ const AddPositionModal = ({
           </Form.Item>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+        <div className='useBetween gap-md'>
           <Form.Item
             label="價格"
             name="price"
+            className='flex-1'
             rules={[
               { required: true, message: '請輸入價格' },
               { type: 'number', min: 0, message: '價格必須大於0' }
@@ -137,7 +151,7 @@ const AddPositionModal = ({
           >
             <InputNumber 
               placeholder="請輸入價格" 
-              style={{ width: '100%' }}
+              style={{ width: '100%', borderRadius: '4px' }}
               min={0}
               precision={2}
               addonBefore="$"
@@ -147,6 +161,7 @@ const AddPositionModal = ({
           <Form.Item
             label="數量"
             name="shares"
+            className='flex-1'
             rules={[
               { required: true, message: '請輸入數量' },
               { type: 'number', min: 1, message: '數量必須大於0' }
@@ -154,24 +169,25 @@ const AddPositionModal = ({
           >
             <InputNumber 
               placeholder="請輸入數量" 
-              style={{ width: '100%' }}
+              style={{ width: '100%', borderRadius: '4px' }}
               min={1}
               precision={0}
             />
           </Form.Item>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+        <div className='useBetween gap-md'>
           <Form.Item
             label="停損價"
             name="stopLoss"
+            className='flex-1'
             rules={[
               { type: 'number', min: 0, message: '停損價必須大於0' }
             ]}
           >
             <InputNumber 
               placeholder="請輸入停損價（選填）" 
-              style={{ width: '100%' }}
+              style={{ width: '100%', borderRadius: '4px' }}
               min={0}
               precision={2}
               addonBefore="$"
@@ -181,8 +197,12 @@ const AddPositionModal = ({
           <Form.Item
             label="備註"
             name="note"
+            className='flex-1'
           >
-            <Input placeholder="請輸入備註（選填）" />
+            <Input 
+              placeholder="請輸入備註（選填）" 
+              style={{ borderRadius: '4px' }}
+            />
           </Form.Item>
         </div>
       </Form>

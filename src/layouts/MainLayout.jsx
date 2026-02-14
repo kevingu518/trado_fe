@@ -55,6 +55,17 @@ const MainLayout = () => {
       return;
     }
     setSelectedKeys([key]);
+    
+    // 導航到對應路由
+    const routeMap = {
+      '1': '/trades',
+      '2': '/dashboard',
+      '3': '/strategy',
+    };
+    
+    if (routeMap[key]) {
+      navigate(routeMap[key]);
+    }
   };
 
   // 登出處理

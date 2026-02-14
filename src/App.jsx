@@ -14,6 +14,7 @@ import ForgotPassword from './pages/ForgotPassword';
 // import Trades from './pages/Trades';
 import Transactions from './pages/Transactions';
 import Trades from './features/trades/pages';
+import Strategies from './features/strategies/pages';
 // Components
 import ProtectedRoute from './components/ProtectedRoute';
 // import Dashboard from './pages/Dashboard';
@@ -45,7 +46,7 @@ function App() {
               {/* <Route path="dashboard" element={<Dashboard />} /> */}
               <Route path="trades" element={<Trades />} />
               <Route path="transactions" element={<Transactions />} />
-              <Route path="strategy" element={<div>策略頁面</div>} />
+              <Route path="strategy" element={<Strategies />} />
               <Route path="settings" element={<div>設定頁面</div>} />
               <Route path="profile" element={<div>使用者資料頁面</div>} />
             </Route>
