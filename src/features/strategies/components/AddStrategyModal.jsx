@@ -77,7 +77,9 @@ const AddStrategyDrawer = ({
       open={visible}
       width={800}
       getContainer={false}
-      bodyStyle={{ padding: 0, overflow: 'hidden' }}
+      maskClosable={true}
+      closable={true}
+      styles={{ body: { padding: 0, overflow: 'hidden' } }}
       extra={
         <Space>
           <span style={{ marginRight: 8, fontSize: '12px' }}>啟用狀態：</span>

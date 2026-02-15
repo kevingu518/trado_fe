@@ -7,19 +7,19 @@
 }
 // 百分比 1/3 到 3/3  
 @each $numerator in 1, 2, 3 {
-  .w-#{$numerator}\/3 { width: percentage($numerator / 3); }
+  .w-#{$numerator}\/3 { width: calc(100% * #{$numerator} / 3); }
 }
 // 百分比 1/4 到 4/4
 @each $numerator in 1, 2, 3, 4 {
-  .w-#{$numerator}\/4 { width: percentage($numerator / 4); }
+  .w-#{$numerator}\/4 { width: calc(100% * #{$numerator} / 4); }
 }
 // 百分比 1/5 到 5/5
 @each $numerator in 1, 2, 3, 4, 5 {
-  .w-#{$numerator}\/5 { width: percentage($numerator / 5); }
+  .w-#{$numerator}\/5 { width: calc(100% * #{$numerator} / 5); }
 }
 // 百分比 1/6 到 6/6
 @each $numerator in 1, 2, 3, 4, 5, 6 {
-  .w-#{$numerator}\/6 { width: percentage($numerator / 6); }
+  .w-#{$numerator}\/6 { width: calc(100% * #{$numerator} / 6); }
 }
 
 /*--------------------- height ---------------------*/
@@ -31,19 +31,19 @@
 }
 // 百分比 1/3 到 3/3  
 @each $numerator in 1, 2, 3 {
-  .h-#{$numerator}\/3 { height: percentage($numerator / 3); }
+  .h-#{$numerator}\/3 { height: calc(100% * #{$numerator} / 3); }
 }
 // 百分比 1/4 到 4/4
 @each $numerator in 1, 2, 3, 4 {
-  .h-#{$numerator}\/4 { height: percentage($numerator / 4); }
+  .h-#{$numerator}\/4 { height: calc(100% * #{$numerator} / 4); }
 }
 // 百分比 1/5 到 5/5
 @each $numerator in 1, 2, 3, 4, 5 {
-  .h-#{$numerator}\/5 { height: percentage($numerator / 5); }
+  .h-#{$numerator}\/5 { height: calc(100% * #{$numerator} / 5); }
 }
 // 百分比 1/6 到 6/6
 @each $numerator in 1, 2, 3, 4, 5, 6 {
-  .h-#{$numerator}\/6 { height: percentage($numerator / 6); }
+  .h-#{$numerator}\/6 { height: calc(100% * #{$numerator} / 6); }
 }
 
 /*--------------------- min-height ---------------------*/

@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Card, Button, Space, Tag, Switch, message, Empty, Spin, Row, Col } from 'antd'
 import { PlusOutlined, EyeOutlined } from '@ant-design/icons'
 import { to } from 'await-to-js'
+import { formatDate } from '@/utils/dateHelper'
 import { useStrategies } from '../hooks/useStrategies'
 import AddStrategyDrawer from '../components/AddStrategyModal'
 import StrategyDrawer from '../components/StrategyDrawer'
@@ -103,16 +104,21 @@ const Strategies = () => {
   return (
     <div className="Strategies">
       {/* 標題區 */}
-      <div className="Strategies-header">
-        <h1 className="Strategies-title">策略管理</h1>
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={handleOpenAddModal}
-          style={{ borderRadius: '4px' }}
-        >
-          新增策略
-        </Button>
+      <div className="card h-full p-none overflow-hidden" style={{ position: 'relative', padding: '8px 12px' }}>
+        <div className="useBetween">
+          <div>
+            <span className='text-title font-bold font-serif'>策略管理</span>
+          </div>
+          <Button 
+            type="primary"
+            className='rounded-sm px-lg'
+            icon={<PlusOutlined />}
+            onClick={handleOpenAddModal}
+            size="middle"
+          >
+            新增策略
+          </Button>
+        </div>
       </div>
 
       {/* 策略列表 */}
@@ -131,7 +137,7 @@ const Strategies = () => {
       ) : (
         <Row gutter={[16, 16]} className="Strategies-list">
           {strategiesList.map((strategy) => (
-            <Col xs={24} sm={12} md={8} lg={6} key={strategy.id}>
+            <Col xs={24} sm={12} md={8} lg={8} key={strategy.id}>
               <Card
                 className={`Strategies-card ${!strategy.isActive ? 'inactive' : ''}`}
                 hoverable
@@ -141,6 +147,8 @@ const Strategies = () => {
                     checked={strategy.isActive}
                     onChange={(checked) => handleToggleActive(strategy, checked)}
                     onClick={(e) => e.stopPropagation()}
+                    size="small"
+                    className="my-base"
                   />,
                   <Button
                     key="view"
@@ -157,31 +165,42 @@ const Strategies = () => {
                 onClick={() => handleViewStrategy(strategy)}
               >
                 <div className="Strategies-card-content">
+                  {/* header */}
                   <div className="Strategies-card-header">
                     <h3 className="Strategies-card-title">{strategy.name}</h3>
-                    <Tag color={categoryMap[strategy.category || strategy.type]?.color || 'default'}>
+                    <Tag 
+                      className="mr-none"
+                      color={categoryMap[strategy.category || strategy.type]?.color || 'default'}>
                       {categoryMap[strategy.category || strategy.type]?.label || strategy.category || strategy.type}
                     </Tag>
                   </div>
-                  <p className="Strategies-card-description">
-                    {strategy.description || '無描述'}
-                  </p>
-                  {strategy.stats && (
-                    <div className="Strategies-card-stats">
-                      <div className="stat-item">
-                        <span className="stat-label">交易數</span>
-                        <span className="stat-value">{strategy.stats.totalTrades || 0}</span>
-                      </div>
-                      {strategy.stats.winRate !== undefined && (
-                        <div className="stat-item">
-                          <span className="stat-label">勝率</span>
-                          <span className="stat-value">
-                            {(strategy.stats.winRate * 100).toFixed(1)}%
-                          </span>
-                        </div>
-                      )}
+                  {/* start date */}
+                  <div className="Strategies-card-date my-sm text-hint">
+                    <span className="text-grey-400 font-pf">開始日期：{formatDate(strategy.createdAt) || '-'}</span>
+                  </div>
+                  {/* stats */}
+                  <div className="Strategies-card-stats">
+                    <div className="stat-item">
+                      <span className="stat-label">交易數</span>
+                      <span className="stat-value">{strategy.stats?.totalTrades ?? 0}</span>
                     </div>
-                  )}
+                    <div className="stat-item">
+                      <span className="stat-label">獲利交易數</span>
+                      <span className="stat-value">{strategy.stats?.winningTrades ?? strategy.stats?.profitTrades ?? 0}</span>
+                    </div>
+                    <div className="stat-item">
+                      <span className="stat-label">虧損交易數</span>
+                      <span className="stat-value">{strategy.stats?.losingTrades ?? strategy.stats?.lossTrades ?? 0}</span>
+                    </div>
+                    <div className="stat-item">
+                      <span className="stat-label">勝率</span>
+                      <span className="stat-value">
+                        {strategy.stats?.winRate !== null && strategy.stats?.winRate !== undefined
+                          ? `${(strategy.stats.winRate * 100).toFixed(1)}%`
+                          : '0%'}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </Card>
             </Col>
@@ -211,6 +230,7 @@ const Strategies = () => {
         strategyData={selectedStrategy}
         onEdit={handleOpenEditModal}
         onDelete={handleDeleteStrategy}
+        getContainer={false}
       />
     </div>
   )

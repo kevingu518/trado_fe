@@ -45,11 +45,18 @@ export const strategyDTO = {
       createdAt: formatDate(apiStrategy.createdAt),
       updatedAt: formatDate(apiStrategy.updatedAt),
       // 統計資料（可選，如果後端有提供）
-      stats: apiStrategy.stats || {
-        totalTrades: 0,
-        winRate: 0,
-        avgProfit: 0,
-      },
+      stats: apiStrategy.stats ? {
+        totalProfitLoss: apiStrategy.stats.totalProfitLoss !== null && apiStrategy.stats.totalProfitLoss !== undefined ? parseFloat(apiStrategy.stats.totalProfitLoss) : null,
+        winRate: apiStrategy.stats.winRate !== null && apiStrategy.stats.winRate !== undefined ? parseFloat(apiStrategy.stats.winRate) : null,
+        riskRewardRatio: apiStrategy.stats.riskRewardRatio !== null && apiStrategy.stats.riskRewardRatio !== undefined ? parseFloat(apiStrategy.stats.riskRewardRatio) : null,
+        avgHoldingDuration: apiStrategy.stats.avgHoldingDuration !== null && apiStrategy.stats.avgHoldingDuration !== undefined ? parseFloat(apiStrategy.stats.avgHoldingDuration) : null,
+        maxDrawdown: apiStrategy.stats.maxDrawdown !== null && apiStrategy.stats.maxDrawdown !== undefined ? parseFloat(apiStrategy.stats.maxDrawdown) : null,
+        totalTrades: apiStrategy.stats.totalTrades || 0,
+        winningTrades: apiStrategy.stats.winningTrades || 0,
+        losingTrades: apiStrategy.stats.losingTrades || 0,
+        // 保留舊欄位以向後兼容
+        avgProfit: apiStrategy.stats.avgProfit !== null && apiStrategy.stats.avgProfit !== undefined ? parseFloat(apiStrategy.stats.avgProfit) : null,
+      } : null,
     }
   },
 
