@@ -2,6 +2,7 @@ import React, { useEffect } from 'react'
 import { Drawer, Form, Input, Select, Switch, Button, InputNumber, Row, Col, Space } from 'antd'
 import PerfectScrollbar from 'react-perfect-scrollbar'
 import 'react-perfect-scrollbar/dist/css/styles.css'
+import { useTheme } from '@/contexts/ThemeContext'
 
 const { Option } = Select
 const { TextArea } = Input
@@ -24,6 +25,19 @@ const AddStrategyDrawer = ({
   const [form] = Form.useForm()
   const [isActive, setIsActive] = React.useState(true)
   const isEditMode = !!initialData
+  const { theme, currentTheme } = useTheme()
+  
+  // 獲取錯誤提示的紅色：如果主題是紅色，使用主題的 primary，否則使用固定的錯誤色
+  const errorColor = currentTheme === 'red' ? theme.primary : '#ff4d4f'
+  
+  // 計算錯誤色的陰影（用於 focus 狀態）
+  const hexToRgba = (hex, alpha = 0.2) => {
+    const r = parseInt(hex.slice(1, 3), 16)
+    const g = parseInt(hex.slice(3, 5), 16)
+    const b = parseInt(hex.slice(5, 7), 16)
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`
+  }
+  const errorColorShadow = hexToRgba(errorColor, 0.2)
 
   useEffect(() => {
     if (visible) {
@@ -104,11 +118,17 @@ const AddStrategyDrawer = ({
       }
     >
       <PerfectScrollbar className="full-width">
-        <Form
-          form={form}
-          layout="vertical"
-          className="add-strategy-form"
+        <div 
+          style={{ 
+            ['--strategy-error-color']: errorColor,
+            ['--strategy-error-color-shadow']: errorColorShadow
+          }}
         >
+          <Form
+            form={form}
+            layout="vertical"
+            className="add-strategy-form"
+          >
         {/* 基本資訊 */}
         <div 
           className='bg-white pr-md pb-xs'
@@ -341,6 +361,7 @@ const AddStrategyDrawer = ({
           </div>
         </div>
       </Form>
+        </div>
       </PerfectScrollbar>
     </Drawer>
   )

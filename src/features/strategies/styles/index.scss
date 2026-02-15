@@ -83,10 +83,16 @@ $strategy-section-colors: (
 
     &-stats {
       display: flex;
-      gap: 16px;
+      flex-direction: column;
+      gap: 12px;
       padding-top: 16px;
       border-top: 1px solid #f0f0f0;
       margin-top: auto;
+
+      .stat-row {
+        display: flex;
+        gap: 16px;
+      }
 
       .stat-item {
         display: flex;
@@ -118,6 +124,55 @@ $strategy-section-colors: (
   .ant-form-item {
     margin-bottom: 20px;
   }
+  
+  // 表單錯誤提示使用主題色的紅色
+  .ant-form-item-explain-error,
+  .ant-form-item-message-error,
+  .ant-form-item-feedback-icon-error {
+    color: var(--strategy-error-color, #ff4d4f) !important;
+  }
+  
+  // 確保錯誤提示文字使用紅色（覆蓋所有可能的錯誤提示元素）
+  .ant-form-item-has-error {
+    // 錯誤提示文字
+    .ant-form-item-explain-error,
+    .ant-form-item-message-error,
+    .ant-form-item-feedback-icon-error,
+    .ant-form-item-explain,
+    .ant-form-item-message {
+      color: var(--strategy-error-color, #ff4d4f) !important;
+    }
+    
+    // 錯誤提示文字內的 span 和 div
+    .ant-form-item-explain-error span,
+    .ant-form-item-explain-error div,
+    .ant-form-item-message-error span,
+    .ant-form-item-message-error div,
+    .ant-form-item-explain span,
+    .ant-form-item-explain div,
+    .ant-form-item-message span,
+    .ant-form-item-message div {
+      color: var(--strategy-error-color, #ff4d4f) !important;
+    }
+  }
+  
+  .ant-form-item-has-error {
+    .ant-input,
+    .ant-input-number,
+    .ant-select-selector,
+    .ant-picker {
+      border-color: var(--strategy-error-color, #ff4d4f) !important;
+    }
+    
+    .ant-input:focus,
+    .ant-input-number:focus,
+    .ant-select-focused .ant-select-selector,
+    .ant-picker-focused {
+      border-color: var(--strategy-error-color, #ff4d4f) !important;
+      box-shadow: 0 0 0 2px var(--strategy-error-color-shadow, rgba(255, 77, 79, 0.2)) !important;
+    }
+  }
+  
   .basic-info{
     @include size(100%, 2px);
    height: 500px;
@@ -140,14 +195,6 @@ $strategy-section-colors: (
   scrollbar-width: none;
 }
 
-// 確保 Drawer 動畫正常運作
-.ant-drawer-content-wrapper {
-  // width: 100% !important;
-  
-  .ant-drawer-content {
-    width: 100% !important;
-  }
-}
 
 // PerfectScrollbar 樣式
 .full-width {
@@ -202,6 +249,25 @@ $strategy-section-colors: (
           border-bottom-right-radius: 8px;
         }
       }
+    }
+  }
+}
+
+// StrategyDrawer 刪除按鈕樣式（header 右上角）
+.StrategyDrawer {
+  .StrategyDrawer-delete-btn {
+    border-radius: 4px !important;
+    color: #666666 !important;
+    background-color: transparent !important;
+    transition: all 0.2s ease;
+
+    .anticon {
+      font-size: 14px;
+    }
+
+    &:hover {
+      color: #b91c1c !important; // 稍暗一點的紅色
+      background-color: rgba(185, 28, 28, 0.08) !important;
     }
   }
 }

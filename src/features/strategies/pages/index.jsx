@@ -137,7 +137,7 @@ const Strategies = () => {
       ) : (
         <Row gutter={[16, 16]} className="Strategies-list">
           {strategiesList.map((strategy) => (
-            <Col xs={24} sm={12} md={8} lg={8} key={strategy.id}>
+            <Col xs={24} sm={12} md={12} lg={6} key={strategy.id}>
               <Card
                 className={`Strategies-card ${!strategy.isActive ? 'inactive' : ''}`}
                 hoverable
@@ -180,25 +180,31 @@ const Strategies = () => {
                   </div>
                   {/* stats */}
                   <div className="Strategies-card-stats">
-                    <div className="stat-item">
-                      <span className="stat-label">交易數</span>
-                      <span className="stat-value">{strategy.stats?.totalTrades ?? 0}</span>
+                    {/* 第一行：交易數、勝率 */}
+                    <div className="stat-row">
+                      <div className="stat-item">
+                        <span className="stat-label">交易數</span>
+                        <span className="stat-value">{strategy.stats?.totalTrades ?? 0}</span>
+                      </div>
+                      <div className="stat-item">
+                        <span className="stat-label">勝率</span>
+                        <span className="stat-value">
+                          {strategy.stats?.winRate !== null && strategy.stats?.winRate !== undefined
+                            ? `${(strategy.stats.winRate * 100).toFixed(1)}%`
+                            : '0%'}
+                        </span>
+                      </div>
                     </div>
-                    <div className="stat-item">
-                      <span className="stat-label">獲利交易數</span>
-                      <span className="stat-value">{strategy.stats?.winningTrades ?? strategy.stats?.profitTrades ?? 0}</span>
-                    </div>
-                    <div className="stat-item">
-                      <span className="stat-label">虧損交易數</span>
-                      <span className="stat-value">{strategy.stats?.losingTrades ?? strategy.stats?.lossTrades ?? 0}</span>
-                    </div>
-                    <div className="stat-item">
-                      <span className="stat-label">勝率</span>
-                      <span className="stat-value">
-                        {strategy.stats?.winRate !== null && strategy.stats?.winRate !== undefined
-                          ? `${(strategy.stats.winRate * 100).toFixed(1)}%`
-                          : '0%'}
-                      </span>
+                    {/* 第二行：獲利交易數、虧損交易數 */}
+                    <div className="stat-row">
+                      <div className="stat-item">
+                        <span className="stat-label">獲利交易數</span>
+                        <span className="stat-value">{strategy.stats?.winningTrades ?? strategy.stats?.profitTrades ?? 0}</span>
+                      </div>
+                      <div className="stat-item">
+                        <span className="stat-label">虧損交易數</span>
+                        <span className="stat-value">{strategy.stats?.losingTrades ?? strategy.stats?.lossTrades ?? 0}</span>
+                      </div>
                     </div>
                   </div>
                 </div>

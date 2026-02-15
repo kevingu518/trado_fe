@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Drawer, Descriptions, Tag, Button, Space, Popconfirm, Row, Col, Tabs, Form, Input, InputNumber, Select, Table, Empty, Spin } from 'antd'
+import { Drawer, Descriptions, Tag, Button, Space, Popconfirm, Row, Col, Tabs, Form, Input, InputNumber, Select, Table, Empty, Spin, theme } from 'antd'
 import { EditOutlined, DeleteOutlined, ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons'
 import PerfectScrollbar from 'react-perfect-scrollbar'
 import 'react-perfect-scrollbar/dist/css/styles.css'
@@ -27,6 +27,7 @@ const StrategyDrawer = ({
 }) => {
   const [form] = Form.useForm()
   const [activeTab, setActiveTab] = useState('performance')
+  const { token } = theme.useToken()
 
   // 獲取該策略的交易記錄（使用 strategyId）
   const { 
@@ -148,9 +149,27 @@ const StrategyDrawer = ({
       getContainer={false}
       maskClosable={true}
       closable={true}
+      className="StrategyDrawer"
       styles={{ body: { padding: 0, overflow: 'hidden' } }}
       extra={
         <Space>
+          <Popconfirm
+            title="刪除策略"
+            description="將刪除此策略及其所有相關記錄，此操作無法復原，確定要刪除嗎？"
+            okText="刪除"
+            okType="danger"
+            cancelText="取消"
+            onConfirm={handleDelete}
+          >
+            <Button
+              type="text"
+              icon={<DeleteOutlined />}
+              className="StrategyDrawer-delete-btn"
+            >
+              刪除
+            </Button>
+          </Popconfirm>
+
           <Button
             icon={<EditOutlined />}
             onClick={() => onEdit && onEdit(strategyData)}
@@ -158,23 +177,6 @@ const StrategyDrawer = ({
           >
             編輯
           </Button>
-          <Popconfirm
-            title="刪除策略"
-            description="確定要刪除此策略嗎？此操作無法復原。"
-            okText="刪除"
-            okType="danger"
-            cancelText="取消"
-            onConfirm={handleDelete}
-          >
-            <Button
-              danger
-              icon={<DeleteOutlined />}
-              loading={loading}
-              style={{ borderRadius: '4px' }}
-            >
-              刪除
-            </Button>
-          </Popconfirm>
         </Space>
       }
     >
@@ -440,8 +442,8 @@ const StrategyDrawer = ({
                           <Descriptions.Item label="總盈虧">
                             <span style={{ 
                               color: (strategyData.stats?.totalProfitLoss ?? 0) >= 0
-                                ? '#52c41a' 
-                                : '#ff4d4f',
+                                ? token.colorError 
+                                : token.colorSuccess,
                               fontWeight: 'bold',
                               fontSize: '16px'
                             }}>
@@ -466,13 +468,13 @@ const StrategyDrawer = ({
                               </div>
                               <div>
                                 <span style={{ fontSize: '12px', color: '#8c8c8c', marginRight: '8px' }}>獲利：</span>
-                                <span style={{ color: '#52c41a', fontWeight: 500 }}>
+                                <span style={{ color: token.colorError, fontWeight: 500 }}>
                                   {strategyData.stats?.winningTrades ?? 0}
                                 </span>
                               </div>
                               <div>
                                 <span style={{ fontSize: '12px', color: '#8c8c8c', marginRight: '8px' }}>虧損：</span>
-                                <span style={{ color: '#ff4d4f', fontWeight: 500 }}>
+                                <span style={{ color: token.colorSuccess, fontWeight: 500 }}>
                                   {strategyData.stats?.losingTrades ?? 0}
                                 </span>
                               </div>
