@@ -437,7 +437,14 @@ const TradeDrawer = ({
                     </Tag>
                   </Descriptions.Item>
                   <Descriptions.Item label="策略">
-                    {tradeData.strategy || '-'}
+                    {(() => {
+                      // 安全地處理策略欄位：可能是字符串、對象或 null
+                      if (!tradeData.strategy) return '-'
+                      if (typeof tradeData.strategy === 'object' && tradeData.strategy !== null) {
+                        return tradeData.strategy.name || '-'
+                      }
+                      return tradeData.strategy
+                    })()}
                   </Descriptions.Item>
                   <Descriptions.Item label="狀態">
                     <Tag color={tradeData.status === 'open' ? 'orange' : 'default'}>

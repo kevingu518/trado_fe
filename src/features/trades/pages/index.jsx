@@ -636,7 +636,17 @@ const Transactions = () => {
   // 注意：這裡只會取得當前頁面的選項，如需完整選項應從 API 取得
   const getUniqueStrategies = () => {
     if (!displayData.length) return []
-    return [...new Set(displayData.map(item => item.strategy).filter(Boolean))].sort()
+    // 提取策略名稱（處理對象或字符串）
+    const strategies = displayData
+      .map(item => {
+        if (!item.strategy) return null
+        if (typeof item.strategy === 'object' && item.strategy !== null) {
+          return item.strategy.name
+        }
+        return item.strategy
+      })
+      .filter(Boolean)
+    return [...new Set(strategies)].sort()
   }
   // 表格欄位定義
   const columns = [
@@ -761,7 +771,14 @@ const Transactions = () => {
       key: 'strategy',
       width: 100,
       align: 'center',
-      render: (strategy) => strategy || <span style={{ color: '#999' }}>-</span>,
+      render: (strategy) => {
+        // 安全地處理策略欄位：可能是字符串、對象或 null
+        if (!strategy) return <span style={{ color: '#999' }}>-</span>
+        if (typeof strategy === 'object' && strategy !== null) {
+          return strategy.name || <span style={{ color: '#999' }}>-</span>
+        }
+        return strategy
+      },
     },
     {
       title: '紀律',

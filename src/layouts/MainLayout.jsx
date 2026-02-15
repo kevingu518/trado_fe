@@ -3,9 +3,13 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Menu, Tooltip, Button, Avatar, Popover } from 'antd';
 import { 
   BarChartOutlined, 
+  ProfileOutlined,
   DashboardOutlined, 
   SettingOutlined,
   UserOutlined,
+  LineChartOutlined,
+  ContainerOutlined,
+  HighlightOutlined,
 } from '@ant-design/icons';
 import { FaRegUser } from "react-icons/fa";
 import { logout } from '../api/api_user';
@@ -20,7 +24,7 @@ import ThemeSwitcher from '../components/ThemeSwitcher';
 const items = [
   {
     key: '1',
-    icon: <BarChartOutlined />,
+    icon: <HighlightOutlined />,
     label: '交易紀錄',
   },
   {
@@ -30,7 +34,7 @@ const items = [
   },
   {
     key: '3',
-    icon: <SettingOutlined />,
+    icon: <ContainerOutlined />,
     label: '策略',
   },
 ];

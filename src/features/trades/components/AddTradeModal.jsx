@@ -1,8 +1,9 @@
 // src/features/trades/components/AddTradeModal.jsx
-import React, { useEffect } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { Modal, Form, Input, Select, DatePicker, InputNumber, Button, Space, message, Segmented } from 'antd'
 import { PlusOutlined, EditOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
+import { useStrategies } from '@/features/strategies/hooks/useStrategies'
 
 const { Option } = Select
 
@@ -16,22 +17,49 @@ const AddTradeModal = ({
   const [form] = Form.useForm()
   const isEditMode = !!tradeId
 
-  // 策略選項
-  const strategies = [
-    { value: 'none', label: '無' },
-    { value: '波段', label: '波段' },
-    { value: '乖離-2', label: '乖離-2' },
-    { value: '套利1', label: '套利1' },
-    { value: '期現對沖', label: '期現對沖' }
-  ]
+  // 獲取策略列表（只獲取啟用的策略）
+  const { data: strategiesData, loading: strategiesLoading } = useStrategies(
+    { isActive: true }, // 只獲取啟用的策略
+    visible // 只在 modal 打開時才獲取
+  )
+
+  // 將策略列表轉換為 Select 選項格式
+  const strategyOptions = useMemo(() => {
+    const options = [
+      { value: 'none', label: '無' } // 保留"無"選項
+    ]
+    
+    if (strategiesData?.list) {
+      const activeStrategies = strategiesData.list
+        .filter(strategy => strategy.isActive) // 再次過濾確保只顯示啟用的
+        .map(strategy => ({
+          value: strategy.id, // 使用策略 ID 作為 value
+          label: strategy.name // 使用策略名稱作為 label
+        }))
+      
+      options.push(...activeStrategies)
+    }
+    
+    return options
+  }, [strategiesData])
 
   // 初始化表單資料（編輯模式）
   useEffect(() => {
     if (visible && isEditMode && initialData) {
+      // 處理策略欄位：可能是策略 ID、策略名稱或 null
+      let strategyValue = 'none'
+      if (initialData.strategyId) {
+        strategyValue = initialData.strategyId
+      } else if (initialData.strategy) {
+        // 如果是策略名稱，嘗試找到對應的 ID
+        const matchedStrategy = strategyOptions.find(opt => opt.label === initialData.strategy)
+        strategyValue = matchedStrategy ? matchedStrategy.value : 'none'
+      }
+      
       form.setFieldsValue({
         symbol: initialData.symbol,
         direction: initialData.direction,
-        strategy: initialData.strategy || 'none',
+        strategy: strategyValue,
         createdAt: initialData.createdAt ? dayjs(initialData.createdAt) : null,
       })
     } else if (visible && !isEditMode) {
@@ -42,7 +70,7 @@ const AddTradeModal = ({
         strategy: 'none',
       })
     }
-  }, [visible, isEditMode, initialData, form])
+  }, [visible, isEditMode, initialData, form, strategyOptions])
 
   // 處理保存
   const handleSave = async () => {
@@ -53,18 +81,34 @@ const AddTradeModal = ({
         ? await form.validateFields().catch(() => form.getFieldsValue()) // 編輯模式：即使驗證失敗也取得表單值
         : await form.validateFields() // 新增模式：嚴格驗證
 
+      // 處理策略欄位：如果選擇的是策略 ID（數字），使用 strategyId；如果是 'none'，設為 null
+      let strategyValue = null
+      let strategyIdValue = null
+      
+      if (values.strategy && values.strategy !== 'none') {
+        if (typeof values.strategy === 'number') {
+          // 如果是數字，當作 strategyId
+          strategyIdValue = values.strategy
+        } else {
+          // 如果是字符串，可能是策略名稱（向後兼容）
+          strategyValue = values.strategy
+        }
+      }
+
       // 編輯模式：只發送有值的欄位
       const tradeData = isEditMode
         ? {
             ...(values.symbol && { symbol: values.symbol }),
             ...(values.direction && { direction: values.direction }),
-            ...(values.strategy !== undefined && values.strategy !== null && values.strategy !== 'none' && { strategy: values.strategy }),
+            ...(strategyIdValue !== null && { strategyId: strategyIdValue }),
+            ...(strategyValue !== null && { strategy: strategyValue }),
             ...(values.createdAt && { createdAt: values.createdAt.format('YYYY-MM-DD') }),
           }
         : {
             symbol: values.symbol,
             direction: values.direction,
-            strategy: values.strategy || null,
+            strategyId: strategyIdValue,
+            strategy: strategyValue,
             createdAt: values.createdAt ? values.createdAt.format('YYYY-MM-DD') : null,
           }
 
@@ -179,8 +223,9 @@ const AddTradeModal = ({
               placeholder="請選擇策略"
               className='rounded-xs'
               style={{ borderRadius: '4px' }}
+              loading={strategiesLoading}
             >
-              {strategies.map(strategy => (
+              {strategyOptions.map(strategy => (
                 <Option key={strategy.value} value={strategy.value}>
                   {strategy.label}
                 </Option>

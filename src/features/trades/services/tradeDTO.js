@@ -78,8 +78,17 @@ export const tradeDTO = {
       id: apiTrade.id,
       symbol: apiTrade.symbol || '',
       assetType: apiTrade.assetType || 'stock',
-      strategy: apiTrade.strategy || '', // 如果 API 沒有提供，保留空字串
-      strategyId: apiTrade.strategyId || null, // 策略 ID
+      // 處理策略欄位：可能是字符串、對象或 null
+      strategy: (() => {
+        if (!apiTrade.strategy) return ''
+        // 如果是對象，提取 name
+        if (typeof apiTrade.strategy === 'object' && apiTrade.strategy !== null) {
+          return apiTrade.strategy.name || ''
+        }
+        // 如果是字符串，直接返回
+        return apiTrade.strategy
+      })(),
+      strategyId: apiTrade.strategyId || (typeof apiTrade.strategy === 'object' && apiTrade.strategy !== null ? apiTrade.strategy.id : null) || null, // 策略 ID
       entryCount: apiTrade.entryCount || 0, // 建倉次數
       holdingDuration: apiTrade.holdingDuration ? parseFloat(apiTrade.holdingDuration) : null, // 持有天數
       direction: convertDirection(apiTrade.direction),
