@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { ConfigProvider } from 'antd';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext'
+import { showInsetEffect } from './utils/insetEffect'
 import './styles/index.scss'
 import App from './App.jsx'
 
@@ -22,6 +23,9 @@ const ThemedApp = () => {
   
   return (
     <ConfigProvider
+      wave={{
+        showEffect: showInsetEffect,
+      }}
       theme={{
         token: {
           // 主要顏色（使用動態主題）
