@@ -178,34 +178,38 @@ $strategy-section-colors: (
    height: 500px;
     background-color: #d63c3c;
   }
+
+
 }
-.ant-drawer-header {
-  padding: 8px;
-}
-// Drawer 樣式 - 移除 body padding 和 scrollbar
-.ant-drawer-body {
-  padding: 0 !important;
-  overflow: hidden !important;
-  
-  // 隱藏默認滾動條
-  &::-webkit-scrollbar {
-    display: none;
+
+.Strategies{
+  .ant-drawer-header {
+    padding: 8px;
   }
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-
-// PerfectScrollbar 樣式
-.full-width {
-  width: 100%;
-  padding: 16px;
+  // Drawer 樣式 - 移除 body padding 和 scrollbar
+  .ant-drawer-body {
+    padding: 0 !important;
+    overflow: hidden !important;
+    
+    // 隱藏默認滾動條
+    &::-webkit-scrollbar {
+      display: none;
+    }
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
   
-  .ps__rail-y {
-    right: 0 !important;
+  
+  // PerfectScrollbar 樣式
+  .full-width {
+    width: 100%;
+    padding: 16px;
+    
+    .ps__rail-y {
+      right: 0 !important;
+    }
   }
 }
-
 // 績效 Tab 樣式
 .strategy-performance {
   .performance-descriptions {

@@ -70,7 +70,6 @@ const Transactions = () => {
     status: statusFilter === 'all' ? undefined : statusFilter,
     strategy: strategyFilter,
   })
-
   // 從 tradesData 取得要顯示的資料
   const displayData = useMemo(() => {
     if (!tradesData) return []

@@ -15,9 +15,9 @@ import ForgotPassword from './pages/ForgotPassword';
 import Transactions from './pages/Transactions';
 import Trades from './features/trades/pages';
 import Strategies from './features/strategies/pages';
+import Dashboard from './pages/Dashboard';
 // Components
 import ProtectedRoute from './components/ProtectedRoute';
-// import Dashboard from './pages/Dashboard';
 
 function App() {
   return (
@@ -42,8 +42,8 @@ function App() {
                 </ProtectedRoute>
               }
             >
-              {/* <Route index element={<Navigate to="/app/dashboard" replace />} /> */}
-              {/* <Route path="dashboard" element={<Dashboard />} /> */}
+              {/* <Route index element={<Navigate to="/dashboard" replace />} /> */}
+              <Route path="dashboard" element={<Dashboard />} />
               <Route path="trades" element={<Trades />} />
               <Route path="transactions" element={<Transactions />} />
               <Route path="strategy" element={<Strategies />} />

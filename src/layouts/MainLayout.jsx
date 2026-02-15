@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Menu, Tooltip, Button, Avatar, Popover } from 'antd';
 import { 
   BarChartOutlined, 
@@ -35,17 +35,60 @@ const items = [
   },
 ];
 
+// 路由到選單 key 的映射
+const pathToKeyMap = {
+  '/trades': '1',
+  '/transactions': '1', // transactions 也對應交易紀錄
+  '/dashboard': '2',
+  '/strategy': '3',
+};
+
+// 選單 key 到路由的映射
+const keyToPathMap = {
+  '1': '/trades',
+  '2': '/dashboard',
+  '3': '/strategy',
+};
 
 const MainLayout = () => {
-  const [selectedKeys, setSelectedKeys] = useState(['1']);
+  const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  
+  // 根據當前路徑設置選中的 key
+  const getSelectedKeyFromPath = (pathname) => {
+    // 先檢查完整路徑匹配（最精確的匹配）
+    if (pathToKeyMap[pathname]) {
+      return pathToKeyMap[pathname];
+    }
+    
+    // 按路徑長度降序排序，優先匹配更長的路徑（避免 /dashboard 匹配到 /trades）
+    const sortedPaths = Object.entries(pathToKeyMap).sort((a, b) => b[0].length - a[0].length);
+    
+    // 檢查路徑是否以某個路由開頭
+    for (const [path, key] of sortedPaths) {
+      // 確保路徑以該路由開頭，且下一個字符是 '/' 或路徑結束（避免部分匹配）
+      if (pathname.startsWith(path) && (pathname.length === path.length || pathname[path.length] === '/')) {
+        return key;
+      }
+    }
+    
+    return '1'; // 默認選中第一個
+  };
+
+  const [selectedKeys, setSelectedKeys] = useState([getSelectedKeyFromPath(location.pathname)]);
 
   // 從 Redux store 取得使用者資訊
   const { email, name, picture } = useUserInfo();
   
   // 從 ThemeContext 取得主題
   const { theme } = useTheme();
+
+  // 當路徑改變時，更新選中的 key
+  useEffect(() => {
+    const key = getSelectedKeyFromPath(location.pathname);
+    setSelectedKeys([key]);
+  }, [location.pathname]);
 
   // dispatch(sliceLogout());
   // 處理選單選擇
@@ -57,14 +100,8 @@ const MainLayout = () => {
     setSelectedKeys([key]);
     
     // 導航到對應路由
-    const routeMap = {
-      '1': '/trades',
-      '2': '/dashboard',
-      '3': '/strategy',
-    };
-    
-    if (routeMap[key]) {
-      navigate(routeMap[key]);
+    if (keyToPathMap[key]) {
+      navigate(keyToPathMap[key]);
     }
   };
 

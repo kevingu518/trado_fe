@@ -124,23 +124,58 @@ export const tradeDTO = {
    * @returns {Array|Object} 轉換後的資料
    */
   toFrontendList(apiData) {
-    if (!apiData) return []
+    if (!apiData) {
+      console.warn('[tradeDTO.toFrontendList] apiData is null/undefined')
+      return []
+    }
+
+    // console.log('[tradeDTO.toFrontendList] apiData:', apiData)
+    // console.log('[tradeDTO.toFrontendList] apiData type:', typeof apiData, 'isArray:', Array.isArray(apiData))
+    // console.log('[tradeDTO.toFrontendList] apiData keys:', Object.keys(apiData))
+
+    // 如果 API 直接返回陣列
+    if (Array.isArray(apiData)) {
+      // console.log('[tradeDTO.toFrontendList] Using array format, count:', apiData.length)
+      return apiData.map(item => this.toFrontend(item))
+    }
 
     // 如果 API 返回 { list, total, page, limit } 格式
     if (apiData.list && Array.isArray(apiData.list)) {
+      // console.log('[tradeDTO.toFrontendList] Using apiData.list format, count:', apiData.list.length)
       return {
         list: apiData.list.map(item => this.toFrontend(item)),
-        total: apiData.total || 0,
+        total: apiData.total || apiData.list.length,
         page: apiData.page || 1,
         pageSize: apiData.limit || apiData.pageSize || 10, // 後端使用 limit，前端使用 pageSize
       }
     }
 
-    // 如果 API 直接返回陣列
-    if (Array.isArray(apiData)) {
-      return apiData.map(item => this.toFrontend(item))
+    // 如果 API 返回 { data: [...] } 格式（響應攔截器可能解包）
+    if (apiData.data && Array.isArray(apiData.data)) {
+      // console.log('[tradeDTO.toFrontendList] Using apiData.data format, count:', apiData.data.length)
+      return {
+        list: apiData.data.map(item => this.toFrontend(item)),
+        total: apiData.total || apiData.data.length,
+        page: apiData.page || 1,
+        pageSize: apiData.limit || apiData.pageSize || 10,
+      }
     }
 
+    // 如果 API 返回 { trades: [...] } 或其他欄位名
+    // 嘗試找到第一個陣列類型的屬性
+    for (const key in apiData) {
+      if (Array.isArray(apiData[key])) {
+        console.log(`[tradeDTO.toFrontendList] Using apiData.${key} format, count:`, apiData[key].length)
+        return {
+          list: apiData[key].map(item => this.toFrontend(item)),
+          total: apiData.total || apiData[key].length,
+          page: apiData.page || 1,
+          pageSize: apiData.limit || apiData.pageSize || 10,
+        }
+      }
+    }
+
+    console.warn('[tradeDTO.toFrontendList] Unknown format, returning empty array. apiData:', apiData)
     return []
   },
 

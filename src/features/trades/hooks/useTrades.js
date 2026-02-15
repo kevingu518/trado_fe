@@ -23,7 +23,6 @@ export const useTrades = (params = {}, enabled = true) => {
       setData(result)
       setError(null)
     }
-
     setLoading(false)
     return { err, result }
   }, [
