@@ -1,7 +1,8 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { ConfigProvider } from 'antd';
-import { GoogleOAuthProvider } from '@react-oauth/google';
+import { ConfigProvider } from 'antd'
+import zhTW from 'antd/locale/zh_TW'
+import { GoogleOAuthProvider } from '@react-oauth/google'
 import { ThemeProvider, useTheme } from './contexts/ThemeContext'
 import { showInsetEffect } from './utils/insetEffect'
 import './styles/index.scss'
@@ -23,6 +24,7 @@ const ThemedApp = () => {
   
   return (
     <ConfigProvider
+      locale={zhTW}
       wave={{
         showEffect: showInsetEffect,
       }}
