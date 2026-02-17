@@ -902,6 +902,7 @@ const Transactions = () => {
             />
             <Select
               className={`rounded-lg ${symbolFilter ? 'has-value' : ''}`}
+              popupClassName="trades-select-dropdown"
               value={symbolFilter}
               onChange={setSymbolFilter}
               placeholder="股票號碼"
@@ -914,6 +915,7 @@ const Transactions = () => {
             </Select>
             <Select
               className={`rounded-sm ${strategyFilter ? 'has-value' : ''}`}
+              popupClassName="trades-select-dropdown"
               value={strategyFilter}
               onChange={setStrategyFilter}
               placeholder="策略"
@@ -926,6 +928,7 @@ const Transactions = () => {
             </Select>
             <Select
               className={`rounded-sm ${directionFilter ? 'has-value' : ''}`}
+              popupClassName="trades-select-dropdown"
               value={directionFilter}
               onChange={setDirectionFilter}
               placeholder="多空"
@@ -937,6 +940,7 @@ const Transactions = () => {
             </Select>
             <Select
               className={`rounded-sm ${statusFilter !== 'all' ? 'has-value' : ''}`}
+              popupClassName="trades-select-dropdown"
               value={statusFilter}
               onChange={setStatusFilter}
               placeholder="交易狀態"
