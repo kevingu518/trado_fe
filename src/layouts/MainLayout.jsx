@@ -37,6 +37,11 @@ const items = [
     icon: <ContainerOutlined />,
     label: '策略',
   },
+  {
+    key: '4',
+    icon: <SettingOutlined />,
+    label: '設定',
+  },
 ];
 
 // 路由到選單 key 的映射
@@ -45,6 +50,7 @@ const pathToKeyMap = {
   '/transactions': '1', // transactions 也對應交易紀錄
   '/dashboard': '2',
   '/strategy': '3',
+  '/settings': '4',
 };
 
 // 選單 key 到路由的映射
@@ -52,6 +58,7 @@ const keyToPathMap = {
   '1': '/trades',
   '2': '/dashboard',
   '3': '/strategy',
+  '4': '/settings',
 };
 
 const MainLayout = () => {

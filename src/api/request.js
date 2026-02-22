@@ -112,4 +112,15 @@ request.interceptors.response.use(
   }
 );
 
+// 上傳檔案方法
+request.upload = (url, formData, config = {}) => {
+  return request.post(url, formData, {
+    ...config,
+    headers: {
+      ...config.headers,
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+};
+
 export default request;
