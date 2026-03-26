@@ -198,6 +198,9 @@
     position: relative; // 確保在偽元素之上
     z-index: 1; // 確保在背景層之上
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
     // opacity: 0.6;
     // background-color: rgba(227, 226, 226, 0.905);
     // border: 1px solid white;
@@ -213,7 +216,13 @@
     box-shadow: 
       0 8px 32px rgba(0, 0, 0, 0.1),
       0 4px 16px rgba(0, 0, 0, 0.05);
+
+    .MainLayout-scroll{
+      height: 100%;
+      // padding: 8px 12px 12px;
+      box-sizing: border-box;
     }
+  }
 }
 
 // Popover 樣式（浮起來的感覺）- 全局樣式，因為 Popover 是 portal 渲染

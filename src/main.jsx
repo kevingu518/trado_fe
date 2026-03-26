@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { ConfigProvider } from 'antd'
+import 'react-perfect-scrollbar/dist/css/styles.css'
 import zhTW from 'antd/locale/zh_TW'
 import { GoogleOAuthProvider } from '@react-oauth/google'
 import { ThemeProvider, useTheme } from './contexts/ThemeContext'
@@ -61,7 +62,7 @@ const ThemedApp = () => {
           
           // 圓角（與 login 頁面風格一致）
           borderRadius: 8,
-          borderRadiusLG: 16,
+          borderRadiusLG: 8,
           borderRadiusSM: 4,
           
           // 陰影
@@ -100,7 +101,7 @@ const ThemedApp = () => {
             rowHoverBg: hexToRgba(theme.primary, 0.05),
           },
           Card: {
-            borderRadius: 16,
+            borderRadius: 8,
             boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
           },
           Tag: {

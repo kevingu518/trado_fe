@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Card, Button, Space, Tag, Switch, message, Empty, Spin, Row, Col } from 'antd'
+import { Card, Button, Space, Tag, Switch, message, Empty, Spin, Row, Col, Tooltip } from 'antd'
 import { PlusOutlined, EyeOutlined } from '@ant-design/icons'
 import { to } from 'await-to-js'
 import { formatDate } from '@/utils/dateHelper'
@@ -15,17 +15,17 @@ const Strategies = () => {
   const [editingStrategy, setEditingStrategy] = useState(null)
   const [selectedStrategy, setSelectedStrategy] = useState(null)
 
-  const { data, loading, error, refetch, createStrategy, creating, updateStrategy, updating, deleteStrategy } = useStrategies()
+  const { data, loading, error, refetch, createStrategy, creating, updateStrategy, updating, deleteStrategy, isAtLimit, strategyCount, maxStrategies } = useStrategies()
 
   // -------------------------   functions   ----------------------------
   const handleAddStrategy = async (values) => {
-    const [err, result] = await to(createStrategy(values))
-    
+    const { err } = await createStrategy(values)
+
     if (err) {
-      message.error(err.msg || '新增策略失敗')
+      message.error(err.message || err.msg || '新增策略失敗')
       return
     }
-    
+
     message.success('新增策略成功')
     setAddModalVisible(false)
   }
@@ -109,15 +109,21 @@ const Strategies = () => {
           <div>
             <span className='text-title font-bold font-serif'>策略管理</span>
           </div>
-          <Button 
-            type="primary"
-            className='rounded-sm px-lg'
-            icon={<PlusOutlined />}
-            onClick={handleOpenAddModal}
-            size="middle"
-          >
-            新增策略
-          </Button>
+          <Tooltip title={isAtLimit ? `策略數量已達上限 (${maxStrategies})` : ''}>
+            <span className="strategy-count-hint text-hint" style={{ marginRight: 8 }}>
+              {strategyCount} / {maxStrategies}
+            </span>
+            <Button
+              type="primary"
+              className='rounded-sm px-lg'
+              icon={<PlusOutlined />}
+              onClick={handleOpenAddModal}
+              size="middle"
+              disabled={isAtLimit}
+            >
+              新增策略
+            </Button>
+          </Tooltip>
         </div>
       </div>
 

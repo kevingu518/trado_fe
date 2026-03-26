@@ -20,6 +20,7 @@ import { to } from 'await-to-js';
 import { useUserInfo } from '../hooks/useUserInfo';
 import { useTheme } from '../contexts/ThemeContext';
 import ThemeSwitcher from '../components/ThemeSwitcher';
+import PerfectScrollbar from 'react-perfect-scrollbar';
 
 const items = [
   {
@@ -191,7 +192,9 @@ const MainLayout = () => {
       </section>
       {/* 主要內容區 */}
       <section className='MainLayout-content'>
-        <Outlet />
+        <PerfectScrollbar className="MainLayout-scroll">
+          <Outlet />
+        </PerfectScrollbar>
       </section>
     </div>
   )

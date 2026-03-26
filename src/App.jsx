@@ -15,7 +15,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import Transactions from './pages/Transactions';
 import Trades from './features/trades/pages';
 import Strategies from './features/strategies/pages';
-import Dashboard from './pages/Dashboard';
+import Dashboard from './features/dashboard/pages';
 import Settings from './features/account/pages/Settings';
 // Components
 import ProtectedRoute from './components/ProtectedRoute';

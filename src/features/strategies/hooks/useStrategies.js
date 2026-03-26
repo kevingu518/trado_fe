@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { to } from 'await-to-js'
 import { strategiesService } from '../services/strategies'
+import { STRATEGY_LIMITS } from '@config/strategy.config'
 
 export const useStrategies = (params = {}, enabled = true) => {
   const [data, setData] = useState(null)
@@ -34,8 +35,20 @@ export const useStrategies = (params = {}, enabled = true) => {
     params.sortOrder
   ])
 
+  // 策略數量控管
+  const strategyCount = data?.list?.length ?? 0
+  const isAtLimit = strategyCount >= STRATEGY_LIMITS.MAX_STRATEGIES
+  const remaining = Math.max(0, STRATEGY_LIMITS.MAX_STRATEGIES - strategyCount)
+
   // Create 操作
   const createStrategy = useCallback(async (payload) => {
+    if (isAtLimit) {
+      const limitErr = new Error(`策略數量已達上限 (${STRATEGY_LIMITS.MAX_STRATEGIES})，請先刪除不需要的策略`)
+      limitErr.code = 'STRATEGY_LIMIT_EXCEEDED'
+      setError(limitErr)
+      return { err: limitErr, result: null }
+    }
+
     setCreating(true)
     setError(null)
 
@@ -51,7 +64,7 @@ export const useStrategies = (params = {}, enabled = true) => {
     await fetchStrategies()
     setCreating(false)
     return { err: null, result }
-  }, [fetchStrategies])
+  }, [fetchStrategies, isAtLimit])
 
   // Update 操作
   const updateStrategy = useCallback(async (strategyId, payload) => {
@@ -104,6 +117,11 @@ export const useStrategies = (params = {}, enabled = true) => {
     updateStrategy,
     updating,
     deleteStrategy,
+    // 策略數量控管
+    strategyCount,
+    isAtLimit,
+    remaining,
+    maxStrategies: STRATEGY_LIMITS.MAX_STRATEGIES,
   }
 }
 
