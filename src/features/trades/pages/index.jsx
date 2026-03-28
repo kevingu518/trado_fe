@@ -24,6 +24,11 @@ const { RangePicker } = DatePicker;
 
 const Transactions = () => {
   // -------------------------   variables   ----------------------------
+  const root = getComputedStyle(document.documentElement)
+  const CLR_UP = root.getPropertyValue('--color-up').trim()
+  const CLR_DOWN = root.getPropertyValue('--color-down').trim()
+  const CLR_NONE = '#666'
+  const pnlColor = (v) => v > 0 ? CLR_UP : v < 0 ? CLR_DOWN : CLR_NONE
 
   // 新增過濾器狀態（使用後端命名）
   // Filter states
@@ -135,9 +140,9 @@ const Transactions = () => {
     { value: 'CALM', label: '冷靜', color: '#1890ff' },
     { value: 'ANXIOUS', label: '焦慮', color: '#faad14' },
     { value: 'EXCITED', label: '興奮', color: '#eb2f96' },
-    { value: 'FEARFUL', label: '恐懼', color: '#ff4d4f' },
+    { value: 'FEARFUL', label: '恐懼', color: CLR_DOWN },
     { value: 'GREEDY', label: '貪婪', color: '#ff7a45' },
-    { value: 'CONFIDENT', label: '自信', color: '#52c41a' },
+    { value: 'CONFIDENT', label: '自信', color: CLR_UP },
     { value: 'DOUBTFUL', label: '懷疑', color: '#fa8c16' },
     { value: 'FRUSTRATED', label: '挫折', color: '#722ed1' },
     { value: 'IMPATIENT', label: '不耐煩', color: '#f5222d' },
@@ -514,10 +519,10 @@ const Transactions = () => {
               <div 
                 className='stamp-discipline absolute top-0 right-0 shadow-sm'
                 style={{
-                  background: record.followedDiscipline === 'pass' 
-                    ? 'linear-gradient(135deg, #52c41a, #73d13d)' 
-                    : record.followedDiscipline === 'fail' 
-                    ? 'linear-gradient(135deg, #ff4d4f, #ff7875)' 
+                  background: record.followedDiscipline === 'pass'
+                    ? `linear-gradient(135deg, ${CLR_UP}, ${CLR_UP}dd)`
+                    : record.followedDiscipline === 'fail'
+                    ? `linear-gradient(135deg, ${CLR_DOWN}, ${CLR_DOWN}dd)`
                     : 'linear-gradient(135deg, #faad14, #ffc53d)',
                 }}
               >
@@ -726,7 +731,9 @@ const Transactions = () => {
       },
       render: (holdingDuration) => {
         if (!holdingDuration && holdingDuration !== 0) return <span style={{ color: '#999' }}>-</span>
-        return `${parseFloat(holdingDuration).toFixed(1)} 天`
+        const days = parseFloat(holdingDuration)
+        if (days <= 0) return '當日'
+        return `${days.toFixed(1)} 天`
       },
     },
     {
@@ -749,26 +756,12 @@ const Transactions = () => {
         if (profitLoss === null) return <span style={{ color: '#999' }}>-</span>
         const isProfit = profitLoss > 0
         return (
-          <div style={{ 
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'flex-end',
-            gap: '4px'
+          <span style={{
+            color: isProfit ? CLR_UP : CLR_DOWN,
+            fontWeight: 'bold'
           }}>
-            <span style={{ 
-              color: isProfit ? '#52c41a' : '#ff4d4f',
-              fontWeight: 'bold',
-              fontSize: '14px'
-            }}>
-              {isProfit ? '↑' : '↓'}
-            </span>
-            <span style={{ 
-              color: isProfit ? '#52c41a' : '#ff4d4f',
-              fontWeight: 'bold'
-            }}>
-              {profitLoss > 0 ? '+' : ''}{profitLoss.toLocaleString()} 元
-            </span>
-          </div>
+            {profitLoss > 0 ? '+' : ''}{profitLoss.toLocaleString()} 元
+          </span>
         )
       },
     },
@@ -795,8 +788,8 @@ const Transactions = () => {
       align: 'center',
       render: (followedDiscipline) => {
         const disciplineConfig = {
-          pass: { icon: <CheckOutlined style={{ color: '#52c41a' }} />, text: '通過' },
-          fail: { icon: <CloseOutlined style={{ color: '#ff4d4f' }} />, text: '失敗' },
+          pass: { icon: <CheckOutlined style={{ color: CLR_UP }} />, text: '通過' },
+          fail: { icon: <CloseOutlined style={{ color: CLR_DOWN }} />, text: '失敗' },
           pending: { icon: <MinusOutlined style={{ color: '#faad14' }} />, text: '未處理' },
         }
         const config = disciplineConfig[followedDiscipline] || { icon: null, text: followedDiscipline }
@@ -1027,23 +1020,23 @@ const Transactions = () => {
             value={pagination.total || 0}
             className="useBaseline gap-sm flex-1"
           />
-          <Statistic 
-            title="持倉中" 
+          <Statistic
+            title="本頁持倉中"
             value={displayData.filter(d => d.status === 'open').length}
             valueStyle={{ color: '#faad14' }}
             className="useBaseline gap-sm flex-1"
           />
-          <Statistic 
-            title="總盈虧" 
+          <Statistic
+            title="本頁盈虧"
             value={displayData.reduce((sum, d) => sum + (d.profitLoss || 0), 0)}
             precision={0}
-            valueStyle={{ 
-              color: displayData.reduce((sum, d) => sum + (d.profitLoss || 0), 0) > 0 ? '#52c41a' : '#ff4d4f'
+            valueStyle={{
+              color: displayData.reduce((sum, d) => sum + (d.profitLoss || 0), 0) > 0 ? CLR_UP : CLR_DOWN
             }}
             className="useBaseline gap-sm flex-1"
           />
-          <Statistic 
-            title="勝率" 
+          <Statistic
+            title="本頁勝率"
             value={(() => {
               const completed = displayData.filter(d => d.status === 'completed')
               const win = completed.filter(d => (d.profitLoss || 0) > 0).length

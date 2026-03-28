@@ -87,6 +87,12 @@ const TradeDrawer = ({
   onDeleteTrade,      // 刪除整筆交易的 callback
 }) => {
   // ------------------ hooks ------------------
+  const root = getComputedStyle(document.documentElement)
+  const CLR_UP = root.getPropertyValue('--color-up').trim()
+  const CLR_DOWN = root.getPropertyValue('--color-down').trim()
+  const CLR_NONE = '#666'
+  const pnlColor = (v) => v > 0 ? CLR_UP : v < 0 ? CLR_DOWN : CLR_NONE
+
   // 使用 useTrade hook 獲取交易詳情
   const { data: tradeData, loading: tradeLoading, error: tradeError, refetch: refetchTrade } = useTrade(tradeId, visible)
   
@@ -129,9 +135,9 @@ const TradeDrawer = ({
     { value: 'CALM', label: '冷靜', color: '#1890ff' },
     { value: 'ANXIOUS', label: '焦慮', color: '#faad14' },
     { value: 'EXCITED', label: '興奮', color: '#eb2f96' },
-    { value: 'FEARFUL', label: '恐懼', color: '#ff4d4f' },
+    { value: 'FEARFUL', label: '恐懼', color: CLR_DOWN },
     { value: 'GREEDY', label: '貪婪', color: '#ff7a45' },
-    { value: 'CONFIDENT', label: '自信', color: '#52c41a' },
+    { value: 'CONFIDENT', label: '自信', color: CLR_UP },
     { value: 'DOUBTFUL', label: '懷疑', color: '#fa8c16' },
     { value: 'FRUSTRATED', label: '挫折', color: '#722ed1' },
     { value: 'IMPATIENT', label: '不耐煩', color: '#f5222d' },
@@ -483,8 +489,8 @@ const TradeDrawer = ({
                     ${tradeData.totalValue ? parseFloat(tradeData.totalValue).toFixed(2) : '0.00'}
                   </Descriptions.Item>
                   <Descriptions.Item label="持倉時間">
-                    {tradeData.holdingDuration
-                      ? `${parseFloat(tradeData.holdingDuration).toFixed(1)} 天`
+                    {tradeData.holdingDuration != null
+                      ? (parseFloat(tradeData.holdingDuration) <= 0 ? '當日' : `${parseFloat(tradeData.holdingDuration).toFixed(1)} 天`)
                       : '-'}
                   </Descriptions.Item>
                 </Descriptions>
@@ -497,7 +503,7 @@ const TradeDrawer = ({
                 <Descriptions column={1} size="small">
                   <Descriptions.Item label="盈虧金額">
                     <span style={{ 
-                      color: tradeData.profitLoss > 0 ? '#52c41a' : tradeData.profitLoss < 0 ? '#ff4d4f' : '#666',
+                      color: pnlColor(tradeData.profitLoss),
                       fontWeight: 'bold'
                     }}>
                       {tradeData.profitLoss > 0 ? '+' : ''}{tradeData.profitLoss?.toLocaleString() || 0} 元
@@ -505,7 +511,7 @@ const TradeDrawer = ({
                   </Descriptions.Item>
                   <Descriptions.Item label="盈虧比例">
                     <span style={{ 
-                      color: (tradeData.profitLossRatio || 0) >= 0 ? '#52c41a' : '#ff4d4f',
+                      color: (tradeData.profitLossRatio || 0) >= 0 ? CLR_UP : CLR_DOWN,
                       fontWeight: 'bold'
                     }}>
                       {tradeData.profitLossRatio >= 0 ? '+' : ''}{((tradeData.profitLossRatio || 0) * 100).toFixed(2)}%
@@ -519,7 +525,7 @@ const TradeDrawer = ({
                   </Descriptions.Item>
                   <Descriptions.Item label="淨損益">
                     <span style={{ 
-                      color: tradeData.netProfitLoss > 0 ? '#52c41a' : tradeData.netProfitLoss < 0 ? '#ff4d4f' : '#666',
+                      color: pnlColor(tradeData.netProfitLoss),
                       fontWeight: 'bold'
                     }}>
                       {tradeData.netProfitLoss > 0 ? '+' : ''}{tradeData.netProfitLoss?.toLocaleString() || 0} 元
