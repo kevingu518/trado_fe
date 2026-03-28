@@ -48,10 +48,10 @@ const Transactions = () => {
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
-    total: 0, // 初始值改為 0，等待 API 回傳實際資料
+    total: 0,
     showSizeChanger: true,
-    // showQuickJumper: true,
-    showTotal: (total, range) => 
+    pageSizeOptions: [10, 20, 50],
+    showTotal: (total, range) =>
       `第 ${range[0]}-${range[1]} 項，共 ${total} 項`,
   })
 
@@ -80,7 +80,7 @@ const Transactions = () => {
     endDate: dateRange?.[1]?.format('YYYY-MM-DD'),
     symbol: symbolFilter,
     direction: directionFilter,
-    status: statusFilter === 'all' ? undefined : statusFilter,
+    status: statusFilter === 'all' ? undefined : statusFilter === 'completed' ? 'closed' : statusFilter,
     strategy: strategyFilter,
   })
   // 從 tradesData 取得要顯示的資料
@@ -992,6 +992,7 @@ const Transactions = () => {
               className='rounded-xs ml-sm'
               {...pagination}
               onChange={handlePagination}
+              onShowSizeChange={handlePagination}
             />
           </div>
         </div>

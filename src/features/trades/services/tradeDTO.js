@@ -148,25 +148,25 @@ export const tradeDTO = {
       return apiData.map(item => this.toFrontend(item))
     }
 
-    // 如果 API 返回 { list, total, page, limit } 格式
+    // 如果 API 返回 { list, pagination: { total, page, limit } } 或 { list, total, page, limit } 格式
     if (apiData.list && Array.isArray(apiData.list)) {
-      // console.log('[tradeDTO.toFrontendList] Using apiData.list format, count:', apiData.list.length)
+      const pg = apiData.pagination || apiData
       return {
         list: apiData.list.map(item => this.toFrontend(item)),
-        total: apiData.total || apiData.list.length,
-        page: apiData.page || 1,
-        pageSize: apiData.limit || apiData.pageSize || 10, // 後端使用 limit，前端使用 pageSize
+        total: pg.total || apiData.list.length,
+        page: pg.page || 1,
+        pageSize: pg.limit || pg.pageSize || 10,
       }
     }
 
-    // 如果 API 返回 { data: [...] } 格式（響應攔截器可能解包）
+    // 如果 API 返回 { data: [...], pagination: { total, page, limit } } 格式
     if (apiData.data && Array.isArray(apiData.data)) {
-      // console.log('[tradeDTO.toFrontendList] Using apiData.data format, count:', apiData.data.length)
+      const pg = apiData.pagination || apiData
       return {
         list: apiData.data.map(item => this.toFrontend(item)),
-        total: apiData.total || apiData.data.length,
-        page: apiData.page || 1,
-        pageSize: apiData.limit || apiData.pageSize || 10,
+        total: pg.total || apiData.data.length,
+        page: pg.page || 1,
+        pageSize: pg.limit || pg.pageSize || 10,
       }
     }
 
