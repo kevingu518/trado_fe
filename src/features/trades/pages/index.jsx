@@ -149,8 +149,8 @@ const Transactions = () => {
     setAddTradeModalVisible(true)
   }
 
-  // 處理新增 trade
-  const handleAddTrade = async (tradeData) => {
+  // 處理新增 trade（可選同時建立倉位）
+  const handleAddTrade = async (tradeData, positionData = null) => {
     try {
       // 準備 API payload（使用前端格式，DTO 會自動轉換）
       const payload = {
@@ -165,15 +165,24 @@ const Transactions = () => {
       }
 
       // 使用 hook 的 createTrade 方法
-      const [error, result] = await createTrade(payload)
+      const { err: error, result } = await createTrade(payload)
 
       if (error) {
         message.error(error.msg || error.message || '新增交易記錄失敗')
         return
       }
 
-      message.success('交易記錄已新增')
-      // 不需要手動 refetch，hook 會自動處理
+      // 如果有倉位資料，接著建立倉位
+      if (positionData && result?.id) {
+        const [posErr] = await to(positionsService.addPosition(result.id, positionData))
+        if (posErr) {
+          message.warning('交易已新增，但倉位建立失敗：' + (posErr.msg || posErr.message || '未知錯誤'))
+          return
+        }
+        await refetchTrades()
+      }
+
+      message.success(positionData ? '交易記錄與倉位已新增' : '交易記錄已新增')
     } catch (err) {
       console.error('新增交易記錄失敗:', err)
       message.error('新增交易記錄失敗，請稍後再試')
@@ -187,18 +196,16 @@ const Transactions = () => {
   }
 
   // 處理保存 trade（用於 Modal 的 onSave，支援新增和編輯）
-  const handleSaveTrade = async (tradeIdOrData, tradeData) => {
+  const handleSaveTrade = async (tradeIdOrData, tradeDataOrPosition) => {
     try {
       // 判斷是編輯模式還是新增模式
       if (typeof tradeIdOrData === 'string' || typeof tradeIdOrData === 'number') {
         // 編輯模式：第一個參數是 tradeId
-        // 注意：updateTradeApi 只接受檢討相關欄位，所以這裡不應該更新交易基本資訊
-        // 如果需要更新交易基本資訊，應該使用其他 API 端點
         message.warning('目前不支援從此處編輯交易基本資訊，請使用其他方式更新')
         return
       } else {
-        // 新增模式：第一個參數是 tradeData
-        await handleAddTrade(tradeIdOrData)
+        // 新增模式：第一個參數是 tradeData，第二個是 positionData（可選）
+        await handleAddTrade(tradeIdOrData, tradeDataOrPosition)
       }
     } catch (err) {
       console.error('保存交易記錄失敗:', err)

@@ -1,21 +1,22 @@
 // src/features/trades/components/AddTradeModal.jsx
 import React, { useEffect, useMemo } from 'react'
-import { Modal, Form, Input, Select, DatePicker, InputNumber, Button, Space, message, Segmented } from 'antd'
+import { Modal, Form, Input, Select, DatePicker, InputNumber, Button, Space, message, Segmented, Switch } from 'antd'
 import { PlusOutlined, EditOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import { useStrategies } from '@/features/strategies/hooks/useStrategies'
 
 const { Option } = Select
 
-const AddTradeModal = ({ 
-  visible, 
-  onClose, 
+const AddTradeModal = ({
+  visible,
+  onClose,
   onSave,
   tradeId = null, // 編輯模式時傳入 tradeId
   initialData = null // 編輯模式時傳入初始資料
 }) => {
   const [form] = Form.useForm()
   const isEditMode = !!tradeId
+  const withPosition = Form.useWatch('withPosition', form)
 
   // 獲取策略列表（只獲取啟用的策略）
   const { data: strategiesData, loading: strategiesLoading } = useStrategies(
@@ -68,6 +69,7 @@ const AddTradeModal = ({
       form.setFieldsValue({
         direction: 'long',
         strategy: 'none',
+        withPosition: false,
       })
     }
   }, [visible, isEditMode, initialData, form, strategyOptions])
@@ -112,16 +114,28 @@ const AddTradeModal = ({
             createdAt: values.createdAt ? values.createdAt.format('YYYY-MM-DD') : null,
           }
 
+      // 組裝倉位資料（新增模式 + 開啟同時建立倉位）
+      let positionData = null
+      if (!isEditMode && values.withPosition) {
+        positionData = {
+          action: values.direction === 'long' ? 'buy' : 'sell',
+          shares: values.positionShares,
+          price: values.positionPrice,
+          date: values.createdAt, // 直接用開倉日
+          stopLoss: values.positionStopLoss || null,
+          note: values.positionNote || null,
+        }
+      }
+
       // 如果是編輯模式，需要傳入 tradeId
       if (isEditMode) {
         await onSave(tradeId, tradeData)
       } else {
-        await onSave(tradeData)
+        await onSave(tradeData, positionData)
       }
       
       form.resetFields()
       onClose()
-      message.success(isEditMode ? '交易記錄已更新' : '交易記錄已新增')
     } catch (error) {
       console.error('保存失敗:', error)
       if (!isEditMode) {
@@ -145,15 +159,15 @@ const AddTradeModal = ({
       className='add-trade-modal'
       width={640}
       footer={[
-        <Button key="cancel" onClick={handleCancel} size="large" style={{ borderRadius: '4px' }}>
+        <Button key="cancel" onClick={handleCancel} size="middle" style={{ borderRadius: '4px' }}>
           取消
         </Button>,
-        <Button 
-          key="save" 
-          type="primary" 
-          icon={isEditMode ? <EditOutlined /> : <PlusOutlined />} 
+        <Button
+          key="save"
+          type="primary"
+          icon={isEditMode ? <EditOutlined /> : null}
           onClick={handleSave}
-          size="large"
+          size="middle"
           style={{ borderRadius: '4px' }}
         >
           {isEditMode ? '保存' : '新增'}
@@ -233,6 +247,97 @@ const AddTradeModal = ({
             </Select>
           </Form.Item>
         </div>
+
+        {/* 同時建立倉位（僅新增模式） */}
+        {!isEditMode && (
+          <>
+            <Form.Item
+              name="withPosition"
+              valuePropName="checked"
+              style={{ marginBottom: withPosition ? 16 : 0 }}
+            >
+              <Space align="center">
+                <Switch
+                  size="small"
+                  checked={withPosition}
+                  onChange={(checked) => form.setFieldsValue({ withPosition: checked })}
+                />
+                <span style={{ fontSize: 14, color: 'var(--text-secondary)' }}>同時建立首筆倉位</span>
+              </Space>
+            </Form.Item>
+
+            {withPosition && (
+              <>
+                <div className='useBetween gap-md'>
+                  <Form.Item
+                    label="價格"
+                    name="positionPrice"
+                    className='flex-1'
+                    rules={[
+                      { required: true, message: '請輸入價格' },
+                      { type: 'number', min: 0, message: '價格必須大於0' }
+                    ]}
+                  >
+                    <InputNumber
+                      placeholder="請輸入價格"
+                      style={{ width: '100%', borderRadius: '4px' }}
+                      min={0}
+                      precision={2}
+                      addonBefore="$"
+                    />
+                  </Form.Item>
+
+                  <Form.Item
+                    label="數量"
+                    name="positionShares"
+                    className='flex-1'
+                    rules={[
+                      { required: true, message: '請輸入數量' },
+                      { type: 'number', min: 1, message: '數量必須大於0' }
+                    ]}
+                  >
+                    <InputNumber
+                      placeholder="請輸入數量"
+                      style={{ width: '100%', borderRadius: '4px' }}
+                      min={1}
+                      precision={0}
+                    />
+                  </Form.Item>
+                </div>
+
+                <div className='useBetween gap-md'>
+                  <Form.Item
+                    label="停損價"
+                    name="positionStopLoss"
+                    className='flex-1'
+                    rules={[
+                      { type: 'number', min: 0, message: '停損價必須大於0' }
+                    ]}
+                  >
+                    <InputNumber
+                      placeholder="選填"
+                      style={{ width: '100%', borderRadius: '4px' }}
+                      min={0}
+                      precision={2}
+                      addonBefore="$"
+                    />
+                  </Form.Item>
+
+                  <Form.Item
+                    label="備註"
+                    name="positionNote"
+                    className='flex-1'
+                  >
+                    <Input
+                      placeholder="選填"
+                      style={{ borderRadius: '4px' }}
+                    />
+                  </Form.Item>
+                </div>
+              </>
+            )}
+          </>
+        )}
       </Form>
     </Modal>
   )
