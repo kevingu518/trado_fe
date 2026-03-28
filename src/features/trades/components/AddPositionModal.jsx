@@ -1,10 +1,9 @@
 // src/features/trades/components/AddPositionModal.jsx
-import React from 'react'
-import { Modal, Form, Input, Select, DatePicker, InputNumber, Button, Space, message } from 'antd'
+import React, { useEffect } from 'react'
+import { Modal, Form, Input, DatePicker, InputNumber, Button, Space, message, Segmented } from 'antd'
+import dayjs from 'dayjs'
 import { PlusOutlined } from '@ant-design/icons'
 import '../styles/AddPositionModal.scss'
-
-const { Option } = Select
 
 const AddPositionModal = ({ 
   visible, 
@@ -14,11 +13,15 @@ const AddPositionModal = ({
 }) => {
   const [form] = Form.useForm()
 
-  // 倉位動作選項
-  const positionActions = [
-    { value: 'buy', label: '買入', color: '#52c41a' },
-    { value: 'sell', label: '賣出', color: '#ff4d4f' }
-  ]
+  useEffect(() => {
+    if (visible) {
+      form.resetFields()
+      form.setFieldsValue({
+        date: dayjs(),
+        action: selectedRecord?.direction === 'short' ? 'sell' : 'buy',
+      })
+    }
+  }, [visible, form, selectedRecord])
 
   // 處理保存
   const handleSave = async () => {
@@ -116,26 +119,14 @@ const AddPositionModal = ({
             className='flex-1'
             rules={[{ required: true, message: '請選擇動作' }]}
           >
-            <Select 
-              placeholder="請選擇動作"
+            <Segmented
+              options={[
+                { label: '買入', value: 'buy' },
+                { label: '賣出', value: 'sell' }
+              ]}
+              block
               style={{ borderRadius: '4px' }}
-            >
-              {positionActions.map(action => (
-                <Option key={action.value} value={action.value}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <div 
-                      style={{ 
-                        width: '12px', 
-                        height: '12px', 
-                        borderRadius: '50%', 
-                        backgroundColor: action.color 
-                      }} 
-                    />
-                    {action.label}
-                  </div>
-                </Option>
-              ))}
-            </Select>
+            />
           </Form.Item>
         </div>
 

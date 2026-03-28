@@ -70,6 +70,7 @@ const AddTradeModal = ({
         direction: 'long',
         strategy: 'none',
         withPosition: false,
+        createdAt: dayjs(),
       })
     }
   }, [visible, isEditMode, initialData, form, strategyOptions])

@@ -24,6 +24,15 @@
 /*--------------------- 新增交易表單樣式 ---------------------*/
 .add-trade-modal {
 
+  .ant-input-number-wrapper {
+    .ant-input-number-group-addon {
+      border-radius: 4px 0 0 4px !important;
+    }
+    .ant-input-number {
+      border-radius: 0 4px 4px 0 !important;
+    }
+  }
+
   .trade-form {
     .form-actions {
       text-align: right;
