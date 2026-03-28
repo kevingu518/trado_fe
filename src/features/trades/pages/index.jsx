@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react'
 import dayjs from 'dayjs'
 
-import { Table, Tag, Button, Space, message, Card, Row, Col, Switch, Rate, Tooltip, DatePicker, Select, Pagination, Tabs, Statistic, Dropdown } from 'antd'
+import { Table, Tag, Button, Space, message, Card, Row, Col, Switch, Rate, Tooltip, DatePicker, Select, Input, Pagination, Tabs, Statistic, Dropdown } from 'antd'
 
 const { Option } = Select;
 const { TabPane } = Tabs;
@@ -33,7 +33,8 @@ const Transactions = () => {
   // 新增過濾器狀態（使用後端命名）
   // Filter states
   const [dateRange, setDateRange] = useState(null) // 時間範圍
-  const [symbolFilter, setSymbolFilter] = useState(null) // 股票號碼
+  const [symbolInput, setSymbolInput] = useState('') // 股票輸入值
+  const [symbolFilter, setSymbolFilter] = useState(null) // 股票號碼（debounced，送 API）
   const [directionFilter, setDirectionFilter] = useState(null) // 多空方向
   const [statusFilter, setStatusFilter] = useState('all') // 交易狀態
   const [strategyFilter, setStrategyFilter] = useState(null) // 策略
@@ -53,6 +54,13 @@ const Transactions = () => {
     showTotal: (total, range) => 
       `第 ${range[0]}-${range[1]} 項，共 ${total} 項`,
   })
+
+  // 搜尋股票：按 Enter 或清空時才送 API
+  const handleSymbolSearch = () => {
+    const val = symbolInput.length >= 2 ? symbolInput : null
+    setSymbolFilter(val)
+    setPagination(prev => ({ ...prev, current: 1 }))
+  }
 
   // -------------------------   hooks   ----------------------------
   // 使用 useTrades hook 取得交易資料
@@ -900,19 +908,22 @@ const Transactions = () => {
               format="YYYY-MM-DD"
               style={{ width: 240 }}
             />
-            <Select
-              className={`rounded-lg ${symbolFilter ? 'has-value' : ''}`}
-              popupClassName="trades-select-dropdown"
-              value={symbolFilter}
-              onChange={setSymbolFilter}
+            <Input
+              className={`rounded-sm ${symbolInput ? 'has-value' : ''}`}
+              value={symbolInput}
+              onChange={(e) => {
+                const val = (e.target.value ?? '').replace(/\D/g, '')
+                setSymbolInput(val)
+                if (!val) {
+                  setSymbolFilter(null)
+                  setPagination(prev => ({ ...prev, current: 1 }))
+                }
+              }}
+              onPressEnter={(e) => { handleSymbolSearch(); e.target.blur() }}
               placeholder="股票號碼"
               allowClear
               style={{ width: 120 }}
-            >
-              {getUniqueSymbols().map(code => (
-                <Option key={code} value={code}>{code}</Option>
-              ))}
-            </Select>
+            />
             <Select
               className={`rounded-sm ${strategyFilter ? 'has-value' : ''}`}
               popupClassName="trades-select-dropdown"
@@ -951,13 +962,14 @@ const Transactions = () => {
               <Option value="completed">已清倉</Option>
             </Select>
             {/* 重置按鈕 */}
-            {(dateRange || symbolFilter || strategyFilter || directionFilter || statusFilter !== 'all') && (
-              <Button 
+            {(dateRange || symbolInput || strategyFilter || directionFilter || statusFilter !== 'all') && (
+              <Button
                 size="small"
                 className='rounded-sm reset-filter-btn'
                 icon={<ClearOutlined />}
                 onClick={() => {
                   setDateRange(null)
+                  setSymbolInput('')
                   setSymbolFilter(null)
                   setStrategyFilter(null)
                   setDirectionFilter(null)
