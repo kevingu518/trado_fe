@@ -1,5 +1,5 @@
 import React from 'react'
-import { Segmented, Card, Progress, Rate, Spin, Tooltip, theme as antdTheme } from 'antd'
+import { Segmented, Card, Progress, Rate, Spin, Tag, Tooltip, theme as antdTheme } from 'antd'
 import { Column, Scatter } from '@ant-design/plots'
 import { useTheme } from '../../../contexts/ThemeContext'
 import { useDashboard, fmtMoney, fmtSign, fmtPct } from '../hooks/useDashboard'
@@ -20,6 +20,14 @@ const Dashboard = () => {
   const CLR_NONE = token.colorTextQuaternary
 
   const pnlColor = (v) => v > 0 ? CLR_UP : v < 0 ? CLR_DOWN : CLR_NONE
+
+  const EMOTION_COLOR = {
+    CALM:      token.colorInfo,
+    ANXIOUS:   token.colorWarning,
+    CONFIDENT: token.colorSuccess,
+    GREEDY:    token.colorWarningActive,
+    FEARFUL:   token.colorError,
+  }
 
   const {
     periodRange, setPeriodRange,
@@ -53,13 +61,34 @@ const Dashboard = () => {
   return (
     <div className="Dashboard">
       <Spin spinning={loading}>
+        <div className="dashboard-top-bar">
+          <span className="text-title">儀表板</span>
+          <Segmented
+            value={periodRange}
+            onChange={setPeriodRange}
+            options={[
+              { label: '本月', value: 'month' },
+              { label: 'Q1',   value: 'q1'    },
+              { label: 'Q2',   value: 'q2'    },
+              { label: 'Q3',   value: 'q3'    },
+              { label: 'Q4',   value: 'q4'    },
+              { label: '今年', value: 'year'  },
+            ]}
+          />
+        </div>
         <div className="dashboard-main-row">
 
           {/* ══════ 左側：帳戶狀態（即時快照）══════ */}
           <div className="dashboard-col-left">
+            <PerfectScrollbar options={{ suppressScrollX: true }}>
             <Card
               className="dashboard-section-card"
-              title={<SectionTitle label="帳戶狀態" />}
+              title={
+                <div className="card-title-row">
+                  <SectionTitle label="帳戶狀態" />
+                  <Tag bordered={false} style={{ marginRight: 0 }}>即時</Tag>
+                </div>
+              }
               styles={{ body: { padding: '16px' } }}
             >
               <div className="account-status-col">
@@ -122,6 +151,10 @@ const Dashboard = () => {
               styles={{ body: { padding: '16px' } }}
             >
               <div className="discipline-col">
+                {discipline.totalTrades === 0 ? (
+                  <div className="empty-hint text-hint">此時段無紀律資料</div>
+                ) : (
+                  <>
                 {/* 自評分數 */}
                 <div className="discipline-item">
                   <span className="mc-label text-hint">平均自評</span>
@@ -172,7 +205,7 @@ const Dashboard = () => {
                         <div
                           key={e.value}
                           className="emotion-bar-seg"
-                          style={{ flex: e.count, background: e.color }}
+                          style={{ flex: e.count, background: EMOTION_COLOR[e.value] }}
                         />
                       ))}
                     </div>
@@ -180,7 +213,7 @@ const Dashboard = () => {
                   <div className="emotion-legend">
                     {discipline.emotions.map(e => (
                       <span key={e.value} className="emotion-legend-item">
-                        <span className="emotion-dot" style={{ background: e.color }} />
+                        <span className="emotion-dot" style={{ background: EMOTION_COLOR[e.value] }} />
                         <span className="text-hint">{e.label} {e.count}</span>
                       </span>
                     ))}
@@ -199,29 +232,15 @@ const Dashboard = () => {
                     ))}
                   </div>
                 </div>
+                  </>
+                )}
               </div>
             </Card>
+            </PerfectScrollbar>
           </div>
 
           {/* ══════ 右側：時段分析區 ══════ */}
           <div className="dashboard-col-right">
-            <div className="dashboard-period-section">
-              <div className="dashboard-period-bar">
-                <span className="text-subtitle">時段分析</span>
-                <Segmented
-                  value={periodRange}
-                  onChange={setPeriodRange}
-                  options={[
-                    { label: '本月', value: 'month' },
-                    { label: 'Q1',   value: 'q1'    },
-                    { label: 'Q2',   value: 'q2'    },
-                    { label: 'Q3',   value: 'q3'    },
-                    { label: 'Q4',   value: 'q4'    },
-                    { label: '今年', value: 'year'  },
-                  ]}
-                />
-              </div>
-
               <PerfectScrollbar className="dashboard-period-cards" options={{ suppressScrollX: true }}>
               {/* ══════ ② 績效 vs 大盤 ══════ */}
               <Card
@@ -229,54 +248,64 @@ const Dashboard = () => {
                 title={<SectionTitle label="績效 vs 大盤" />}
                 styles={{ body: { padding: '16px' } }}
               >
-                <div className="perf-vs-market">
-                  {/* 左：我的績效 */}
-                  <div className="perf-vs-col perf-vs-mine">
-                    <span className="mc-label text-hint">報酬率</span>
-                    <span className="perf-vs-big" style={{ color: pnlColor(perf.myReturn) }}>
-                      {fmtPct(perf.myReturn)}
-                    </span>
-                    <span className="mc-label text-hint">累計損益</span>
-                    <span className="perf-vs-value fw-600" style={{ color: pnlColor(perf.myPnL) }}>
-                      {fmtSign(perf.myPnL)}{fmtMoney(perf.myPnL)}<span className="mc-unit text-hint">元</span>
-                    </span>
+                <div className="perf-card">
+                  {/* 頂部：報酬率左右對比 */}
+                  <div className="perf-return-row">
+                    <div className="perf-return-col">
+                      <span className="mc-label text-hint">我的報酬率</span>
+                      <span className="perf-return-big" style={{ color: pnlColor(perf.myReturn) }}>
+                        {fmtPct(perf.myReturn)}
+                      </span>
+                      <span className="perf-return-sub fw-600" style={{ color: pnlColor(perf.myPnL) }}>
+                        {fmtSign(perf.myPnL)}{fmtMoney(perf.myPnL)}<span className="mc-unit text-hint">元</span>
+                      </span>
+                    </div>
+                    <div className="perf-return-col">
+                      <span className="mc-label text-hint">大盤報酬率</span>
+                      <span className="perf-return-big" style={{ color: pnlColor(perf.marketReturn) }}>
+                        {fmtPct(perf.marketReturn)}
+                      </span>
+                      <span className="perf-return-sub fw-600" style={{ color: pnlColor(perfDiff) }}>
+                        超額 {fmtPct(perfDiff)}
+                      </span>
+                    </div>
                   </div>
 
-                  {/* 中：vs 大盤 */}
-                  <div className="perf-vs-col perf-vs-market-col">
-                    <span className="mc-label text-hint">大盤報酬率</span>
-                    <span className="perf-vs-value fw-600" style={{ color: pnlColor(perf.marketReturn) }}>
-                      {fmtPct(perf.marketReturn)}
-                    </span>
-                    <span className="mc-label text-hint">超額報酬</span>
-                    <span className="perf-vs-value fw-600" style={{ color: pnlColor(perfDiff) }}>
-                      {fmtPct(perfDiff)}
-                    </span>
-                  </div>
-
-                  {/* 右：交易表現 */}
-                  <div className="perf-vs-col perf-vs-stats">
-                    <div className="perf-stat-row">
+                  {/* 底部：KPI 一排 */}
+                  <div className="perf-kpi-row">
+                    <div className="perf-kpi-item">
                       <span className="mc-label text-hint">勝率</span>
-                      <span className="fw-600" style={{ color: perf.winRate > 50 ? CLR_UP : perf.winRate > 0 ? CLR_DOWN : CLR_NONE }}>
+                      <span className="perf-kpi-value fw-600" style={{ color: perf.winRate > 50 ? CLR_UP : perf.winRate > 0 ? CLR_DOWN : CLR_NONE }}>
                         {perf.winRate > 0 ? `${perf.winRate.toFixed(1)}%` : '−'}
                       </span>
                     </div>
-                    <div className="perf-stat-row">
+                    <div className="perf-kpi-item">
                       <span className="mc-label text-hint">盈虧比</span>
-                      <span className="fw-600" style={{ color: perf.rrRatio > 1 ? CLR_UP : perf.rrRatio > 0 ? CLR_DOWN : CLR_NONE }}>
+                      <span className="perf-kpi-value fw-600" style={{ color: perf.rrRatio > 1 ? CLR_UP : perf.rrRatio > 0 ? CLR_DOWN : CLR_NONE }}>
                         {perf.rrRatio > 0 ? `${perf.rrRatio.toFixed(2)}x` : '−'}
                       </span>
                     </div>
-                    <div className="perf-stat-row">
-                      <span className="mc-label text-hint">交易筆數</span>
-                      <span className="fw-600">
+                    <div className="perf-kpi-item">
+                      <span className="mc-label text-hint">夏普值</span>
+                      <span className="perf-kpi-value fw-600" style={{ color: perf.sharpe > 1 ? CLR_UP : perf.sharpe > 0 ? CLR_NONE : perf.sharpe < 0 ? CLR_DOWN : CLR_NONE }}>
+                        {perf.trades > 0 ? perf.sharpe.toFixed(2) : '−'}
+                      </span>
+                    </div>
+                    <div className="perf-kpi-item">
+                      <span className="mc-label text-hint">筆數</span>
+                      <span className="perf-kpi-value fw-600">
                         {perf.trades > 0 ? `${perf.trades} 筆` : '−'}
                       </span>
                     </div>
-                    <div className="perf-stat-row">
+                    <div className="perf-kpi-item">
+                      <span className="mc-label text-hint">平均損益</span>
+                      <span className="perf-kpi-value fw-600" style={{ color: pnlColor(perf.avgPnl) }}>
+                        {perf.trades > 0 ? <>{fmtSign(perf.avgPnl)}{fmtMoney(perf.avgPnl)}<span className="mc-unit text-hint">元</span></> : '−'}
+                      </span>
+                    </div>
+                    <div className="perf-kpi-item">
                       <span className="mc-label text-hint">最大回撤</span>
-                      <span className="fw-600" style={{ color: perf.maxDrawdown < 0 ? CLR_DOWN : CLR_NONE }}>
+                      <span className="perf-kpi-value fw-600" style={{ color: perf.maxDrawdown < 0 ? CLR_DOWN : CLR_NONE }}>
                         {perf.maxDrawdown < 0 ? `${perf.maxDrawdown.toFixed(1)}%` : '−'}
                       </span>
                     </div>
@@ -519,7 +548,6 @@ const Dashboard = () => {
               </Card>
 
             </PerfectScrollbar>{/* end dashboard-period-cards */}
-            </div>{/* end dashboard-period-section */}
           </div>{/* end dashboard-col-right */}
         </div>{/* end dashboard-main-row */}
       </Spin>

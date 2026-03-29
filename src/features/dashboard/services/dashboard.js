@@ -18,12 +18,12 @@ const MOCK_ACCOUNT = {
 }
 
 const MOCK_PERF_PERIODS = {
-  month: { myReturn:  3.2, marketReturn:  1.8, myPnL:  12450, trades: 16, winRate: 62.5, rrRatio: 2.14, maxDrawdown: -3.1 },
-  q1:    { myReturn:  7.1, marketReturn:  4.2, myPnL:  28000, trades: 35, winRate: 62.9, rrRatio: 2.33, maxDrawdown: -5.2 },
-  q2:    { myReturn: -0.9, marketReturn: -2.1, myPnL:  -4200, trades: 19, winRate: 42.1, rrRatio: 0.86, maxDrawdown: -8.7 },
-  q3:    { myReturn:  0,   marketReturn:  0,   myPnL:      0, trades: 0,  winRate: 0,    rrRatio: 0,    maxDrawdown: 0    },
-  q4:    { myReturn:  0,   marketReturn:  0,   myPnL:      0, trades: 0,  winRate: 0,    rrRatio: 0,    maxDrawdown: 0    },
-  year:  { myReturn:  9.2, marketReturn:  3.8, myPnL:  36250, trades: 70, winRate: 57.1, rrRatio: 1.79, maxDrawdown: -8.7 },
+  month: { myReturn:  3.2, marketReturn:  1.8, myPnL:  12450, trades: 16, winRate: 62.5, rrRatio: 2.14, maxDrawdown: -3.1, sharpe: 1.82, avgPnl: 778 },
+  q1:    { myReturn:  7.1, marketReturn:  4.2, myPnL:  28000, trades: 35, winRate: 62.9, rrRatio: 2.33, maxDrawdown: -5.2, sharpe: 1.45, avgPnl: 800 },
+  q2:    { myReturn: -0.9, marketReturn: -2.1, myPnL:  -4200, trades: 19, winRate: 42.1, rrRatio: 0.86, maxDrawdown: -8.7, sharpe: -0.32, avgPnl: -221 },
+  q3:    { myReturn:  0,   marketReturn:  0,   myPnL:      0, trades: 0,  winRate: 0,    rrRatio: 0,    maxDrawdown: 0,    sharpe: 0, avgPnl: 0 },
+  q4:    { myReturn:  0,   marketReturn:  0,   myPnL:      0, trades: 0,  winRate: 0,    rrRatio: 0,    maxDrawdown: 0,    sharpe: 0, avgPnl: 0 },
+  year:  { myReturn:  9.2, marketReturn:  3.8, myPnL:  36250, trades: 70, winRate: 57.1, rrRatio: 1.79, maxDrawdown: -8.7, sharpe: 1.12, avgPnl: 518 },
 }
 
 const MOCK_STRATEGY_BY_PERIOD = {
@@ -101,25 +101,88 @@ const MOCK_TRADES_ALL = [
   { date: '2026-03-24', symbol: '2886', pnl: -1100, direction: 'long',  marketIndex: 20800 },
 ]
 
-const MOCK_DISCIPLINE = {
-  avgRating: 3.6,
-  totalReviewed: 16,
-  totalTrades: 18,
-  disciplinePass: 12,
-  disciplineFail: 4,
-  emotions: [
-    { label: '冷靜', value: 'CALM',      color: '#1890ff', count: 7 },
-    { label: '焦慮', value: 'ANXIOUS',   color: '#faad14', count: 3 },
-    { label: '自信', value: 'CONFIDENT', color: '#52c41a', count: 3 },
-    { label: '貪婪', value: 'GREEDY',    color: '#ff7a45', count: 2 },
-    { label: '恐懼', value: 'FEARFUL',   color: '#ff4d4f', count: 1 },
-  ],
-  errors: [
-    { label: '出場時機錯誤', count: 4 },
-    { label: '情緒控制問題', count: 3 },
-    { label: '偏離策略',     count: 2 },
-    { label: '部位大小錯誤', count: 1 },
-  ],
+const MOCK_DISCIPLINE_BY_PERIOD = {
+  month: {
+    avgRating: 3.4,
+    totalReviewed: 12,
+    totalTrades: 16,
+    disciplinePass: 9,
+    disciplineFail: 3,
+    emotions: [
+      { label: '冷靜', value: 'CALM',      count: 5 },
+      { label: '焦慮', value: 'ANXIOUS',   count: 2 },
+      { label: '自信', value: 'CONFIDENT', count: 3 },
+      { label: '貪婪', value: 'GREEDY',    count: 1 },
+      { label: '恐懼', value: 'FEARFUL',   count: 1 },
+    ],
+    errors: [
+      { label: '出場時機錯誤', count: 3 },
+      { label: '情緒控制問題', count: 2 },
+      { label: '偏離策略',     count: 1 },
+    ],
+  },
+  q1: {
+    avgRating: 3.6,
+    totalReviewed: 28,
+    totalTrades: 35,
+    disciplinePass: 22,
+    disciplineFail: 6,
+    emotions: [
+      { label: '冷靜', value: 'CALM',      count: 12 },
+      { label: '焦慮', value: 'ANXIOUS',   count: 5 },
+      { label: '自信', value: 'CONFIDENT', count: 7 },
+      { label: '貪婪', value: 'GREEDY',    count: 3 },
+      { label: '恐懼', value: 'FEARFUL',   count: 1 },
+    ],
+    errors: [
+      { label: '出場時機錯誤', count: 6 },
+      { label: '情緒控制問題', count: 4 },
+      { label: '偏離策略',     count: 3 },
+      { label: '部位大小錯誤', count: 2 },
+    ],
+  },
+  q2: {
+    avgRating: 3.1,
+    totalReviewed: 14,
+    totalTrades: 19,
+    disciplinePass: 9,
+    disciplineFail: 5,
+    emotions: [
+      { label: '冷靜', value: 'CALM',      count: 4 },
+      { label: '焦慮', value: 'ANXIOUS',   count: 5 },
+      { label: '自信', value: 'CONFIDENT', count: 2 },
+      { label: '貪婪', value: 'GREEDY',    count: 3 },
+      { label: '恐懼', value: 'FEARFUL',   count: 2 },
+    ],
+    errors: [
+      { label: '情緒控制問題', count: 4 },
+      { label: '出場時機錯誤', count: 3 },
+      { label: '偏離策略',     count: 2 },
+      { label: '部位大小錯誤', count: 1 },
+    ],
+  },
+  q3: { avgRating: 0, totalReviewed: 0, totalTrades: 0, disciplinePass: 0, disciplineFail: 0, emotions: [], errors: [] },
+  q4: { avgRating: 0, totalReviewed: 0, totalTrades: 0, disciplinePass: 0, disciplineFail: 0, emotions: [], errors: [] },
+  year: {
+    avgRating: 3.4,
+    totalReviewed: 52,
+    totalTrades: 70,
+    disciplinePass: 40,
+    disciplineFail: 12,
+    emotions: [
+      { label: '冷靜', value: 'CALM',      count: 21 },
+      { label: '焦慮', value: 'ANXIOUS',   count: 12 },
+      { label: '自信', value: 'CONFIDENT', count: 12 },
+      { label: '貪婪', value: 'GREEDY',    count: 7 },
+      { label: '恐懼', value: 'FEARFUL',   count: 4 },
+    ],
+    errors: [
+      { label: '出場時機錯誤', count: 10 },
+      { label: '情緒控制問題', count: 8 },
+      { label: '偏離策略',     count: 5 },
+      { label: '部位大小錯誤', count: 3 },
+    ],
+  },
 }
 
 // 動態計算當月範圍
@@ -177,7 +240,7 @@ export const dashboardService = {
     return filterByPeriod(MOCK_TRADES_ALL, period)
   },
 
-  async fetchDiscipline() {
-    return MOCK_DISCIPLINE
+  async fetchDiscipline(period) {
+    return MOCK_DISCIPLINE_BY_PERIOD[period] || MOCK_DISCIPLINE_BY_PERIOD.q1
   },
 }

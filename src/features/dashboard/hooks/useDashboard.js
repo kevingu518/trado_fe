@@ -56,7 +56,7 @@ export const useDashboard = () => {
       dashboardService.fetchPerformance(period),
       dashboardService.fetchStrategies(period),
       dashboardService.fetchTrades(period),
-      dashboardService.fetchDiscipline(),
+      dashboardService.fetchDiscipline(period),
     ])
     setAccount(acct)
     setPerformance(perf)
